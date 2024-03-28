@@ -17,7 +17,7 @@ const Login = () => {
     // Set Variables
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
+
     // Email Validator
     const email_check = (email) => {
 
@@ -31,7 +31,6 @@ const Login = () => {
 
         return false;
     }
-
 
     // Get User
     const get_user = async (filter) => {
@@ -116,12 +115,6 @@ const Login = () => {
         });
     }
 
-        
-    const handleShowPasswordPress = () => {
-        setShowPassword(!showPassword);
-    }
-
-    
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.logoContainer}>
@@ -147,8 +140,6 @@ const Login = () => {
                     isSecure={true}
                     inputStyle={styles.input}
                     placeholderTextColor="#C5BD62"
-                    showPassword={showPassword}
-                    onShowPasswordPress={handleShowPasswordPress}
                 />
                 <TouchableOpacity style={styles.loginButton} onPress={handleLoginPress}>
                     <Text style={styles.loginButtonText}>Login</Text>
