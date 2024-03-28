@@ -3,8 +3,9 @@ import { Keyboard, SafeAreaView, Image, Text, View, StyleSheet, TouchableOpacity
 import { useRouter, Stack } from 'expo-router';
 import InputIcon from '../../components/auth/InputIcon';
 import FirebaseApp from '../../helpers/FirebaseApp';
+import { FontAwesome } from '@expo/vector-icons'
 import { signInWithEmailAndPassword  } from 'firebase/auth';
-import { ROLES, COLLECTIONS } from '../../constants';
+import { ROLES, COLLECTIONS, icons } from '../../constants';
 
 const Login = () => {
 
@@ -16,7 +17,7 @@ const Login = () => {
     // Set Variables
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
+    const [showPassword, setShowPassword] = useState(false);
     // Email Validator
     const email_check = (email) => {
 
@@ -30,6 +31,7 @@ const Login = () => {
 
         return false;
     }
+
 
     // Get User
     const get_user = async (filter) => {
@@ -114,88 +116,127 @@ const Login = () => {
         });
     }
 
-    return (  
+        
+    const handleShowPasswordPress = () => {
+        setShowPassword(!showPassword);
+    }
+
+    
+    return (
         <SafeAreaView style={styles.container}>
-
-            <View behavior={'height'} style={styles.body}>
-
-                {/* Header */}
-                <View style={styles.headerWrapper}>
-                    <Image source={require('../../assets/images/logos/normal.png')} style={styles.headerImage}></Image>
-                </View>
-                <Text style={styles.headerText}>Login</Text>
-
-                {/* Fields */}
-                <InputIcon icon={'user-circle-o'} placeholder={'Username'} value={username} setValue={setUsername}  isSlimIcon={false} />
-                <InputIcon icon={'lock'} placeholder={'Password'} value={password} setValue={setPassword} isSecure={true} />
-
-                {/* Login */}
-                <TouchableOpacity style={styles.login} onPress={handleLoginPress}>
-                    <Text style={styles.buttonText}>Login</Text>
+            <View style={styles.logoContainer}>
+                <Image source={require('../../assets/images/logos/normal.png')} style={styles.logoImage} />
+                <Text style={styles.logoText}>WasteNot</Text>
+            </View>
+            <View style={styles.formContainer}>
+                <Text style={styles.heading}>LOGIN</Text>
+                <InputIcon
+                    icon={'user-circle-o'}
+                    placeholder={'Username'}
+                    value={username}
+                    setValue={setUsername}
+                    isSlimIcon={false}
+                    inputStyle={styles.input}
+                    placeholderTextColor="#C5BD62"
+                />
+                <InputIcon
+                    icon={'lock'}
+                    placeholder={'Password'}
+                    value={password}
+                    setValue={setPassword}
+                    isSecure={true}
+                    inputStyle={styles.input}
+                    placeholderTextColor="#C5BD62"
+                    showPassword={showPassword}
+                    onShowPasswordPress={handleShowPasswordPress}
+                />
+                <TouchableOpacity style={styles.loginButton} onPress={handleLoginPress}>
+                    <Text style={styles.loginButtonText}>Login</Text>
                 </TouchableOpacity>
-
-                {/* Forgot Password */}
-                <Text style={{fontSize: 12}}>Forgot Password?</Text>
-
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </View>
-
             <View style={styles.foot}>
-                <View style={{flexDirection: 'row'}}>
-                    {/* Don't have any account yet */}
-                    <Text style={{fontSize: 12, marginRight: 5}}>Don't have any account yet?</Text>
-                    <Text style={{fontSize: 12, textDecorationLine: 'underline', color: '#389F4F'}} onPress={() => router.replace('/auth/Register')}>Sign Up</Text>
-                </View>
+                <Text style={styles.signUpText}>
+                    Don't have any account yet?{' '}
+                    <Text style={styles.signUpLink} onPress={() => router.replace('/auth/Register')}>
+                        Sign Up
+                    </Text>
+                </Text>
             </View>
-
         </SafeAreaView>
     );
-}
+};
 
-// Styles
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#FFFFFF',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: '-60%'
     },
-    body: {
-        flex: 1,
+    logoContainer: {
+        flexDirection: 'column', // Changed to column for vertical alignment
         alignItems: 'center',
-        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    logoImage: {
+        height: 100,
+        width: 100,
+        marginRight: 10,
+    },
+    logoText: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#18C573',
+    },
+    formContainer: {
+        backgroundColor: '#18C573',
+        padding: 20,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'white',
+      },
+    heading: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        marginBottom: 10,
+    },
+    input: {
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#18C573',
+        borderRadius: 5,
+        padding: 10,
+        marginVertical: 5,
+        color: '#333',
+    },
+    loginButton: {
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 10,
+        borderRadius: 5,
+        marginTop: 10,
+    },
+    loginButtonText: {
+        color: '#3DCA64',
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    forgotPasswordText: {
+        color: '#FFFFFF',
+        marginTop: 10,
+        textDecorationLine: 'underline',
+    },
+    signUpText: {
+        color: '#333',
+        marginTop: 20,
+    },
+    signUpLink: {
+        color: '#18C573',
+        textDecorationLine: 'underline',
     },
     foot: {
-        marginBottom: 70
+        marginBottom: 70,
     },
-    headerWrapper: {
-        marginLeft: 'auto'
-    },  
-    headerImage: {
-        height: 122,
-        width: 122
-    },
-    headerText: {
-        fontSize: 25,
-        fontWeight: 'bold',
-        textTransform: 'uppercase',
-        marginTop: -20,
-        marginBottom: 10,
-        alignSelf: 'flex-start'
-    },
-    login: {
-        height: 40,
-        width: 258,
-        backgroundColor: '#389F4F',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 20,
-        marginBottom: 10
-    },
-    buttonText: {
-        color: '#FFF',
-        fontWeight: 'bold',
-        fontSize: 20,
-    }
 });
-
 export default Login;
