@@ -131,7 +131,7 @@ const Recommendation = () => {
                         ],
                         temperature: 1
                     }
-                };
+                  };
 
                 // Get response
                 const response = await axios.request(options);
