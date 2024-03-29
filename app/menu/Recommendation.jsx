@@ -39,6 +39,50 @@ const Recommendation = () => {
 
         const get_recommendations = async () => {
 
+            const getContentBetweenBrackets = (inputString) => {
+
+                if (typeof inputString === 'undefined') {
+                    return '';
+                }
+
+                // Find the index of the first "[" and last "]"
+                const startIndex = inputString.indexOf("[");
+                const endIndex = inputString.lastIndexOf("]");
+            
+                // Check if both "[" and "]" exist in the string
+                if (startIndex === -1 || endIndex === -1) {
+                    return null; // Return null if either "[" or "]" is not found
+                }
+            
+                // Extract and return the content between "[" and "]"
+                return inputString.substring(startIndex, endIndex + 1);
+            }
+
+            const cleanString = (inputString) => {
+
+                if (typeof inputString === 'undefined') {
+                    return '';
+                }
+
+                let insideString = false;
+                let result = '';
+            
+                for (let i = 0; i < inputString.length; i++) {
+                    const char = inputString[i];
+            
+                    if (char === '"') {
+                        insideString = !insideString;
+                        result += char;
+                    } else if (!insideString && /\s/.test(char)) {
+                        continue; // Skip whitespace outside of strings
+                    } else {
+                        result += char;
+                    }
+                }
+            
+                return result;
+            }            
+
             try {
 
                 // In stock
@@ -68,24 +112,24 @@ const Recommendation = () => {
 
                 const options = {
                     method: 'POST',
-                    url: 'https://chatgpt146.p.rapidapi.com/chat',
+                    url: 'https://chatgpt53.p.rapidapi.com/',
                     headers: {
-                        'content-type': 'application/json',
-                        'X-RapidAPI-Key': 'afab6284a5mshae6dd43c22e53a1p14328bjsn3e3a0c4e172d',
-                        'X-RapidAPI-Host': 'chatgpt146.p.rapidapi.com'
+                    'content-type': 'application/json',
+                    'X-RapidAPI-Key': 'afab6284a5mshae6dd43c22e53a1p14328bjsn3e3a0c4e172d',
+                    'X-RapidAPI-Host': 'chatgpt53.p.rapidapi.com'
                     },
                     data: {
                         messages: [
-                          {
-                            role: 'user',
-                            content: `
-                                As a Chef, write three Asian or Filipino recipes strictly, remember strictly using only the ingredients mentioned and please do not add ingredient not specified below:
-                                ` + (in_stock.map(x => (`- ${ x.Item_name }, can be used as ${ (x.classifications.join(', ')) }`))) + `
-                                Reply including raw minified array json in the end with format: [{name: 'string', ingredients: 'array', instructions: 'array'}] after a phrase capitalized "HERE IS YOUR JSON FORMAT:"
-                            `
-                          }
+                            {
+                                role: 'user',
+                                content: `
+                                    As a Chef, write three Asian or Filipino recipes strictly, remember strictly using only the ingredients mentioned and please do not add ingredient not specified below:
+                                    ` + (in_stock.map(x => (`- ${ x.Item_name }, can be used as ${ (x.classifications.join(', ')) }`)).join('\n')) + `
+                                    . Reply including raw minified array json in the end with format: [{name: 'string', ingredients: 'array', instructions: 'array'}] after a phrase capitalized "HERE IS YOUR JSON FORMAT:"
+                                `.trim()
+                            }
                         ],
-                        temperature: 0.8
+                        temperature: 1
                     }
                 };
 
@@ -93,16 +137,14 @@ const Recommendation = () => {
                 const response = await axios.request(options);
 
                 // Retreive json
-                const json_string = response.data.content.substring(response.data.content.indexOf("HERE IS YOUR JSON FORMAT:") + ("HERE IS YOUR JSON FORMAT".length + 1));
+                const json_string = getContentBetweenBrackets(response.data.choices[0].message.content);
 
-                // Minify
-                const minified_json = json_string.replace(/\n+/g, ' ').trim();
-
-                console.log(options.data.query);console.log(response.data.content);console.log(json_string);console.log(minified_json);
+                // Minify and convert
+                const converted_json = JSON.parse(cleanString(json_string));
 
                 // Set recommendation
                 setRecommendations('Possible recipes:');
-                setRecipes(JSON.parse(JSON.parse(minified_json)));
+                setRecipes(converted_json ? converted_json : []);
 
                 // Get existing
                 const existing = await FBApp.db.get(COLLECTIONS.recommendation, { column: 'Restaurant_id', comparison: '==', value: profile.adminId });
@@ -111,7 +153,7 @@ const Recommendation = () => {
                 if (existing) {
                     FBApp.db.update(COLLECTIONS.recommendation, {
                         ingredients: ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId),
-                        recipes: recipes
+                        recipes: converted_json
                     });
                 }
                 // Save
@@ -119,7 +161,7 @@ const Recommendation = () => {
                     FBApp.db.insert(COLLECTIONS.recommendation, {
                         Restaurant_id: profile.adminId,
                         ingredients: ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId),
-                        recipes: recipes
+                        recipes: converted_json
                     });
                 }
             }
