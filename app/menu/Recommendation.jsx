@@ -4,8 +4,8 @@ import getIngredients from '../../hook/getIngredients';
 import axios from 'axios';
 import { AntDesign } from '@expo/vector-icons';
 import Navigation from '../../components/common/navigation/Navigation';
-import { SafeAreaView, Text, StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
-import { COLLECTIONS, COLORS, SIZES, INGREDIENT_CLASSIFICATIONS } from '../../constants';
+import { SafeAreaView, Text, StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { COLLECTIONS, COLORS, SIZES, INGREDIENT_CLASSIFICATIONS, SPOONACULAR_API_KEY } from '../../constants';
 import FirebaseApp from '../../helpers/FirebaseApp';
 import getRecommendation from '../../hook/getRecommendation';
 
@@ -18,7 +18,8 @@ const Recommendation = () => {
     const [recommendations, setRecommendations] = useState('');
     const [recipes, setRecipes] = useState([]);
     const [recFromDb, setRecFromDb] = useState(true);
-
+    const [cancelTokenSource, setCancelTokenSource] = useState(null);
+    const capitalizeText = (text) => text.toLowerCase().replace(/(^|\s)\S/g, (match) => match.toUpperCase());
 
     useEffect(() => {
         // Refetch if profile is loaded
@@ -39,51 +40,55 @@ const Recommendation = () => {
 
         const get_recommendations = async () => {
 
-            const getContentBetweenBrackets = (inputString) => {
+            // const getContentBetweenBrackets = (inputString) => {
 
-                if (typeof inputString === 'undefined') {
-                    return '';
-                }
+            //     if (typeof inputString === 'undefined') {
+            //         return '';
+            //     }
 
-                // Find the index of the first "[" and last "]"
-                const startIndex = inputString.indexOf("[");
-                const endIndex = inputString.lastIndexOf("]");
+            //     // Find the index of the first "[" and last "]"
+            //     const startIndex = inputString.indexOf("[");
+            //     const endIndex = inputString.lastIndexOf("]");
             
-                // Check if both "[" and "]" exist in the string
-                if (startIndex === -1 || endIndex === -1) {
-                    return null; // Return null if either "[" or "]" is not found
-                }
+            //     // Check if both "[" and "]" exist in the string
+            //     if (startIndex === -1 || endIndex === -1) {
+            //         return null; // Return null if either "[" or "]" is not found
+            //     }
             
-                // Extract and return the content between "[" and "]"
-                return inputString.substring(startIndex, endIndex + 1);
-            }
+            //     // Extract and return the content between "[" and "]"
+            //     return inputString.substring(startIndex, endIndex + 1);
+            // }
 
-            const cleanString = (inputString) => {
+            // const cleanString = (inputString) => {
 
-                if (typeof inputString === 'undefined') {
-                    return '';
-                }
+            //     if (typeof inputString === 'undefined') {
+            //         return '';
+            //     }
 
-                let insideString = false;
-                let result = '';
+            //     let insideString = false;
+            //     let result = '';
             
-                for (let i = 0; i < inputString.length; i++) {
-                    const char = inputString[i];
+            //     for (let i = 0; i < inputString.length; i++) {
+            //         const char = inputString[i];
             
-                    if (char === '"') {
-                        insideString = !insideString;
-                        result += char;
-                    } else if (!insideString && /\s/.test(char)) {
-                        continue; // Skip whitespace outside of strings
-                    } else {
-                        result += char;
-                    }
-                }
+            //         if (char === '"') {
+            //             insideString = !insideString;
+            //             result += char;
+            //         } else if (!insideString && /\s/.test(char)) {
+            //             continue; // Skip whitespace outside of strings
+            //         } else {
+            //             result += char;
+            //         }
+            //     }
             
-                return result;
-            }            
+            //     return result;
+            // }
 
             try {
+
+                // Create a cancel token source
+                const source = axios.CancelToken.source();
+                setCancelTokenSource(source);
 
                 // In stock
                 const in_stock = ingredients.filter((x) => parseInt(x.quantity_left) > 0);
@@ -110,50 +115,235 @@ const Recommendation = () => {
                     return;
                 }
 
-                const options = {
-                    method: 'POST',
-                    url: 'https://chatgpt53.p.rapidapi.com/',
-                    headers: {
-                    'content-type': 'application/json',
-                    'X-RapidAPI-Key': 'afab6284a5mshae6dd43c22e53a1p14328bjsn3e3a0c4e172d',
-                    'X-RapidAPI-Host': 'chatgpt53.p.rapidapi.com'
-                    },
-                    data: {
-                        messages: [
-                            {
-                                role: 'user',
-                                content: `
-                                    As a Chef, write three Asian or Filipino recipes strictly, remember strictly using only the ingredients mentioned and please do not add ingredient not specified below:
-                                    ` + (in_stock.map(x => (`- ${ x.Item_name }, can be used as ${ (x.classifications.join(', ')) }`)).join('\n')) + `
-                                    . Reply including raw minified array json in the end with format: [{name: 'string', ingredients: 'array', instructions: 'array'}] after a phrase capitalized "HERE IS YOUR JSON FORMAT:"
-                                `.trim()
-                            }
-                        ],
-                        temperature: 1
-                    }
-                  };
+                /*
+                 * Chatgpt
+                 */
 
-                // Get response
-                const response = await axios.request(options);
+                // const options = {
+                //     method: 'POST',
+                //     url: 'https://chatgpt53.p.rapidapi.com/',
+                //     headers: {
+                //     'content-type': 'application/json',
+                //     'X-RapidAPI-Key': 'afab6284a5mshae6dd43c22e53a1p14328bjsn3e3a0c4e172d',
+                //     'X-RapidAPI-Host': 'chatgpt53.p.rapidapi.com'
+                //     },
+                //     data: {
+                //         messages: [
+                //             {
+                //                 role: 'user',
+                //                 content: `
+                //                     As a Chef, write three Asian or Filipino recipes strictly, remember strictly using only the ingredients mentioned and please do not add ingredient not specified below:
+                //                     ` + (in_stock.map(x => (`- ${ x.Item_name }, can be used as ${ (x.classifications.join(', ')) }`)).join('\n')) + `
+                //                     . Reply including raw minified array json in the end with format: [{name: 'string', ingredients: 'array', instructions: 'array'}] after a phrase capitalized "HERE IS YOUR JSON FORMAT:"
+                //                 `.trim()
+                //             }
+                //         ],
+                //         temperature: 1
+                //     }
+                // };
 
-                // Retreive json
-                const json_string = getContentBetweenBrackets(response.data.choices[0].message.content);
+                // // Get response
+                // const response = await axios.request(options);
 
-                // Minify and convert
-                const converted_json = JSON.parse(cleanString(json_string));
+                // // Retreive json
+                // const json_string = getContentBetweenBrackets(response.data.choices[0].message.content);
 
-                // Set recommendation
-                setRecommendations('Possible recipes:');
-                setRecipes(converted_json ? converted_json : []);
+                // // Minify and convert
+                // const converted_json = JSON.parse(cleanString(json_string));
+
+                // // Set recommendation
+                // setRecommendations('Possible recipes:');
+                // setRecipes(converted_json ? converted_json : []);
+
+
 
                 // Get existing
+                
+                /*
+                 * Spoonacular
+                 */
+                let response;
+                try {
+                    const sample_response = [
+                        {
+                            "id": 73420,
+                            "image": "https://img.spoonacular.com/recipes/73420-312x231.jpg",
+                            "imageType": "jpg",
+                            "likes": 0,
+                            "missedIngredientCount": 3,
+                            "missedIngredients": [
+                                {
+                                    "aisle": "Baking",
+                                    "amount": 1.0,
+                                    "id": 18371,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/white-powder.jpg",
+                                    "meta": [],
+                                    "name": "baking powder",
+                                    "original": "1 tsp baking powder",
+                                    "originalName": "baking powder",
+                                    "unit": "tsp",
+                                    "unitLong": "teaspoon",
+                                    "unitShort": "tsp"
+                                },
+                                {
+                                    "aisle": "Spices and Seasonings",
+                                    "amount": 1.0,
+                                    "id": 2010,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/cinnamon.jpg",
+                                    "meta": [],
+                                    "name": "cinnamon",
+                                    "original": "1 tsp cinnamon",
+                                    "originalName": "cinnamon",
+                                    "unit": "tsp",
+                                    "unitLong": "teaspoon",
+                                    "unitShort": "tsp"
+                                },
+                                {
+                                    "aisle": "Milk, Eggs, Other Dairy",
+                                    "amount": 1.0,
+                                    "id": 1123,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/egg.png",
+                                    "meta": [],
+                                    "name": "egg",
+                                    "original": "1 egg",
+                                    "originalName": "egg",
+                                    "unit": "",
+                                    "unitLong": "",
+                                    "unitShort": ""
+                                }
+                            ],
+                            "title": "All Day Simple Slow-Cooker FALL OFF the BONE Ribs",
+                            "unusedIngredients": [],
+                            "usedIngredientCount": 1,
+                            "usedIngredients": [
+                                {
+                                    "aisle": "Produce",
+                                    "amount": 6.0,
+                                    "id": 9003,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/apple.jpg",
+                                    "meta": [],
+                                    "name": "apples",
+                                    "original": "6 large baking apples",
+                                    "originalName": "baking apples",
+                                    "unit": "large",
+                                    "unitLong": "larges",
+                                    "unitShort": "large"
+                                }
+                            ]
+                        },
+                        {
+                            "id": 632660,
+                            "image": "https://img.spoonacular.com/recipes/632660-312x231.jpg",
+                            "imageType": "jpg",
+                            "likes": 3,
+                            "missedIngredientCount": 4,
+                            "missedIngredients": [
+                                {
+                                    "aisle": "Milk, Eggs, Other Dairy",
+                                    "amount": 1.5,
+                                    "extendedName": "unsalted butter",
+                                    "id": 1001,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/butter-sliced.jpg",
+                                    "meta": [
+                                        "unsalted",
+                                        "cold"
+                                    ],
+                                    "name": "butter",
+                                    "original": "1 1/2 sticks cold unsalted butter cold unsalted butter<",
+                                    "originalName": "cold unsalted butter cold unsalted butter<",
+                                    "unit": "sticks",
+                                    "unitLong": "sticks",
+                                    "unitShort": "sticks"
+                                },
+                                {
+                                    "aisle": "Produce",
+                                    "amount": 4.0,
+                                    "id": 1079003,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/red-delicious-apples.png",
+                                    "meta": [
+                                        "red",
+                                        " such as golden delicious, peeled, cored and cut into 1/4-inch-thick slices "
+                                    ],
+                                    "name": "red apples",
+                                    "original": "4 larges red apples, such as Golden Delicious, peeled, cored and cut into 1/4-inch-thick slices",
+                                    "originalName": "s red apples, such as Golden Delicious, peeled, cored and cut into 1/4-inch-thick slices",
+                                    "unit": "large",
+                                    "unitLong": "larges",
+                                    "unitShort": "large"
+                                },
+                                {
+                                    "aisle": "Spices and Seasonings",
+                                    "amount": 2.0,
+                                    "id": 2010,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/cinnamon.jpg",
+                                    "meta": [],
+                                    "name": "cinnamon",
+                                    "original": "2 teaspoons cinnamon",
+                                    "originalName": "cinnamon",
+                                    "unit": "teaspoons",
+                                    "unitLong": "teaspoons",
+                                    "unitShort": "tsp"
+                                },
+                                {
+                                    "aisle": "Nut butters, Jams, and Honey",
+                                    "amount": 2.0,
+                                    "id": 19719,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/apricot-jam.jpg",
+                                    "meta": [
+                                        "melted"
+                                    ],
+                                    "name": "apricot preserves",
+                                    "original": "2 tablespoons apricot preserves, melted and strained",
+                                    "originalName": "apricot preserves, melted and strained",
+                                    "unit": "tablespoons",
+                                    "unitLong": "tablespoons",
+                                    "unitShort": "Tbsp"
+                                }
+                            ],
+                            "title": "Apricot Glazed Apple Tart",
+                            "unusedIngredients": [
+                                {
+                                    "aisle": "Produce",
+                                    "amount": 1.0,
+                                    "id": 9003,
+                                    "image": "https://img.spoonacular.com/ingredients_100x100/apple.jpg",
+                                    "meta": [],
+                                    "name": "apples",
+                                    "original": "apples",
+                                    "originalName": "apples",
+                                    "unit": "serving",
+                                    "unitLong": "serving",
+                                    "unitShort": "serving"
+                                }
+                            ],
+                            "usedIngredientCount": 0,
+                            "usedIngredients": []
+                        }
+                    ];
+                    response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${in_stock.map(x => x.Item_name.toLowerCase()).join(',')}&number=1&limitLicense=false&ignorePantry=false&apiKey=${SPOONACULAR_API_KEY}`, {
+                        cancelToken: source.token
+                    });
+                    console.log(response.data);
+                    console.log('success');
+                    setRecommendations('Possible recipes:');
+                    setRecipes(response.data);
+                }
+                catch (error) {
+                    console.log(error);
+
+                    // Throw error on non-cancel related errors
+                    if (!axios.isCancel(error)) {
+                        throw error.message;
+                    }
+                }
+                
                 const existing = await FBApp.db.get(COLLECTIONS.recommendation, { column: 'Restaurant_id', comparison: '==', value: profile.adminId });
 
                 // Update if existing
                 if (existing) {
                     FBApp.db.update(COLLECTIONS.recommendation, {
                         ingredients: ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId),
-                        recipes: converted_json
+                        recipes: recipes
                     });
                 }
                 // Save
@@ -161,7 +351,7 @@ const Recommendation = () => {
                     FBApp.db.insert(COLLECTIONS.recommendation, {
                         Restaurant_id: profile.adminId,
                         ingredients: ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId),
-                        recipes: converted_json
+                        recipes: recipes
                     });
                 }
             }
@@ -182,13 +372,18 @@ const Recommendation = () => {
                 setRecommendations('No ingredients available');
             }
         }
+
+        // Cleanup function to cancel the request when the component unmounts
+        return () => {
+            cancelTokenSource && cancelTokenSource.cancel();
+        };
     }, [recFromDb, isLI, ingredients]);
 
     useEffect(() => {
         // Get recommendation
         if (!recommendation.isLoading) {
             // There are recipes and recipes in inventory matches the ingredients for the recipe, if not get new set of recipes
-            if (recommendation.recommendation.recipes && JSON.stringify(recommendation.recommendation.ingredients) == JSON.stringify(ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId))) {
+            if (recommendation.recommendation.recipes && recommendation.recommendation.recipes.length > 0 && JSON.stringify(recommendation.recommendation.ingredients) == JSON.stringify(ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId))) {
                 setRecipes(recommendation.recommendation.recipes);
             }
             else {
@@ -211,7 +406,8 @@ const Recommendation = () => {
                                     {/* Recipe Name */}
                                     <View style={ styles.itemInfoContainer }>
                                         <View style={ styles.itemDetails }>
-                                            <Text style={ styles.itemName }>{ recipe.name }</Text>
+                                            <Image src={ recipe.image } style={ styles.itemImageThumb }/>
+                                            <Text style={ styles.itemName }>{ recipe.title }</Text>
                                         </View>
                                     </View>
                                     <TouchableOpacity style={ { paddingLeft: 10 } } onPress={ () => {
@@ -233,24 +429,39 @@ const Recommendation = () => {
                                 <View style={ styles.recipeContainer }>
                                     <View style={ styles.recipeNameHeader }>
                                         <Text style={ styles.ingredientLabel }>Recipe</Text>
-                                        <Text style={ styles.recipeName}>{ recipe.name }</Text>
+                                        <Text style={ styles.recipeName }>{ recipe.title }</Text>
+                                        <Image src={ recipe.image } style={ styles.itemImage }/>
                                     </View>
                                     <View style={ styles.ingredientContainer }>
                                         <Text style={ styles.ingredientLabel }>Ingredients: </Text>
                                         {
-                                            recipe.ingredients.map((ingredient, i) => (
-                                                <Text key={i} style={ styles.ingredient }> - { ingredient }</Text>
+                                            [...recipe.missedIngredients, ...recipe.usedIngredients].map((ingredient, i) => (
+                                                <Text key={i} style={ styles.ingredient }> - { capitalizeText(ingredient.name) }</Text>
                                             ))
                                         }
                                     </View>
-                                    <View style={ styles.ingredientContainer }>
-                                        <Text style={ styles.ingredientLabel }>Instructions: </Text>
-                                        {
-                                            recipe.instructions.map((instructions, i) => (
-                                                <Text key={i} style={ styles.ingredient }> { !Number.isInteger(parseInt(instructions[0])) && ((i + 1 )+ '.') } { instructions }</Text>
-                                            ))
+                                    {
+                                        recipe.instructionsVisible && <View style={ styles.ingredientContainer }>
+                                            <Text style={ styles.ingredientLabel }>Instructions: </Text>
+                                            {
+                                                ['Hihi ugma nlng ni'].map((instructions, i) => (
+                                                    <Text key={i} style={ styles.ingredient }> { !Number.isInteger(parseInt(instructions[0])) && ((i + 1 )+ '.') } { instructions }</Text>
+                                                ))
+                                            }
+                                        </View>
+                                    }
+                                    <TouchableOpacity onPress={ () => setRecipes(recipes.map((x, i) => {
+
+                                        if (i == index) {
+                                            x.instructionsVisible = !x.instructionsVisible;
                                         }
-                                    </View>
+
+                                        return x;
+                                    })) }>
+                                        <Text style={{ ...styles.ingredientLabel, textDecorationLine: 'underline', fontWeight: 'bold', fontSize: 12, textAlign: 'right' }}>
+                                            { recipe.instructionsVisible ? 'Hide' : 'View' } Instructions
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
                             }
                         </>
@@ -273,13 +484,14 @@ const styles = StyleSheet.create({
         fontSize: 18
     },
     ingredientContainer: {
-        
+        marginBottom: 10
     },
     recipeName: {
         color: '#FFFFFF',
         fontWeight: 'bold',
         fontSize: 20,
-        paddingHorizontal: SIZES.small
+        paddingHorizontal: SIZES.small,
+        marginBottom: 5
     },
     recipeContainer: {
         flex: 1,
@@ -287,6 +499,9 @@ const styles = StyleSheet.create({
         padding: SIZES.medium,
         borderRadius: 5,
         marginBottom: 10,
+    },
+    recipeNameHeader: {
+        marginBottom: 10
     },
     container: {
         flex: 1,
@@ -325,11 +540,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.8,
         shadowRadius: 2,
         shadowOffset: {
-        height: 2,
-        width: 1.4,
+            height: 2,
+            width: 1.4,
         },
     },
-
     statusIndicator: {
         width: 20,
         height: 20,
@@ -344,13 +558,25 @@ const styles = StyleSheet.create({
     itemDetails: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
     },
     itemName: {
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        paddingRight: 60
     },
+    itemImageThumb: {
+        height: 50,
+        width: 50,
+        marginRight: 15,
+        borderRadius: 15
+    },
+    itemImage: {
+        height: 150,
+        width: 150,
+        borderRadius: 15,
+        marginLeft: SIZES.small
+    }
 });
 
 export default Recommendation;
