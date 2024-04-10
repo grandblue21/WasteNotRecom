@@ -320,11 +320,9 @@ const Recommendation = () => {
                             "usedIngredients": []
                         }
                     ];
-                    response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${in_stock.map(x => x.Item_name.toLowerCase()).join(',')}&number=1&limitLicense=false&ignorePantry=false&apiKey=${SPOONACULAR_API_KEY}`, {
+                    response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${in_stock.map(x => x.Item_name.toLowerCase()).join(',')}&number=3&limitLicense=false&ignorePantry=false&apiKey=${SPOONACULAR_API_KEY}`, {
                         cancelToken: source.token
                     });
-                    console.log(response.data);
-                    console.log('success');
                     setRecommendations('Possible recipes:');
                     setRecipes(response.data);
                 }
@@ -392,6 +390,90 @@ const Recommendation = () => {
         }
     }, [recommendation]);
 
+    let z = {
+            "name": "Bourbon Molasses Butter",
+            "steps": [
+                {
+                    "equipment": [
+                        {
+                            "id": 404669,
+                            "image": "sauce-pan.jpg",
+                            "name": "sauce pan"
+                        }
+                    ],
+                    "ingredients": [
+                        {
+                            "id": 10014037,
+                            "image": "bourbon.png",
+                            "name": "bourbon"
+                        },
+                        {
+                            "id": 19335,
+                            "image": "sugar-in-bowl.png",
+                            "name": "sugar"
+                        }
+                    ],
+                    "number": 1,
+                    "step": "Combine the bourbon and sugar in a small saucepan and cook over high heat until reduced to 3 tablespoons, remove and let cool."
+                },
+                {
+                    "equipment": [
+                        {
+                            "id": 404771,
+                            "image": "food-processor.png",
+                            "name": "food processor"
+                        }
+                    ],
+                    "ingredients": [
+                        {
+                            "id": 19304,
+                            "image": "molasses.jpg",
+                            "name": "molasses"
+                        },
+                        {
+                            "id": 10014037,
+                            "image": "bourbon.png",
+                            "name": "bourbon"
+                        },
+                        {
+                            "id": 2047,
+                            "image": "salt.jpg",
+                            "name": "salt"
+                        }
+                    ],
+                    "number": 2,
+                    "step": "Put the butter, molasses, salt and cooled bourbon mixture in a food processor and process until smooth."
+                },
+                {
+                    "equipment": [
+                        {
+                            "id": 404730,
+                            "image": "plastic-wrap.jpg",
+                            "name": "plastic wrap"
+                        },
+                        {
+                            "id": 404783,
+                            "image": "bowl.jpg",
+                            "name": "bowl"
+                        }
+                    ],
+                    "ingredients": [],
+                    "number": 3,
+                    "step": "Scrape into a bowl, cover with plastic wrap and refrigerate for at least 1 hour to allow the flavors to meld."
+                },
+                {
+                    "equipment": [],
+                    "ingredients": [],
+                    "length": {
+                        "number": 30,
+                        "unit": "minutes"
+                    },
+                    "number": 4,
+                    "step": "Remove from the refrigerator about 30 minutes before using to soften."
+                }
+            ]
+        }
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={ styles.body }>
@@ -441,23 +523,44 @@ const Recommendation = () => {
                                         }
                                     </View>
                                     {
-                                        recipe.instructionsVisible && <View style={ styles.ingredientContainer }>
+                                        recipe.instructionsVisible && recipe.instructions && <View style={ styles.ingredientContainer }>
                                             <Text style={ styles.ingredientLabel }>Instructions: </Text>
                                             {
-                                                ['Hihi ugma nlng ni'].map((instructions, i) => (
+                                                recipe.instructions.map((instructions, i) => (
                                                     <Text key={i} style={ styles.ingredient }> { !Number.isInteger(parseInt(instructions[0])) && ((i + 1 )+ '.') } { instructions }</Text>
                                                 ))
                                             }
                                         </View>
                                     }
-                                    <TouchableOpacity onPress={ () => setRecipes(recipes.map((x, i) => {
+                                    <TouchableOpacity onPress={ () => Promise.all(recipes.map(async (x, i) => {
 
+                                        // Current
                                         if (i == index) {
+
+                                                // No instructions yet
+                                                if (!x.instructions) {
+                                                    try {
+                                                        let response_i = await axios.get(`https://api.spoonacular.com/recipes/${x.id}/analyzedInstructions?apiKey=${SPOONACULAR_API_KEY}`);
+                                                        
+                                                        // Based instruction
+                                                        if (response_i.data.length > 0) {
+                                                            x.instructions = response_i.data[0].steps.map((y) => y.step);
+                                                        }
+                                                        else {
+                                                            x.instructions = ['Instructions not specified'];
+                                                        }
+                                                    }
+                                                    catch (error) {
+                                                        x.instructions = ['Failed to get recipe instructions :('];
+                                                    }
+                                                }
+
+                                            // Toggle
                                             x.instructionsVisible = !x.instructionsVisible;
                                         }
 
                                         return x;
-                                    })) }>
+                                    })).then((x) => setRecipes(x)) }>
                                         <Text style={{ ...styles.ingredientLabel, textDecorationLine: 'underline', fontWeight: 'bold', fontSize: 12, textAlign: 'right' }}>
                                             { recipe.instructionsVisible ? 'Hide' : 'View' } Instructions
                                         </Text>
