@@ -55,7 +55,7 @@ const CustomDropdown = () => {
 const Profile = () => {
 
     const router = useRouter();
-    const { profile } = getProfile();
+    const { profile } = getProfile();console.log(profile.imageUrl);
 
     return (
         <View style={ styles.container }>
@@ -75,11 +75,9 @@ const Profile = () => {
             }}/>
 
             <View style={ styles.body }>
-                <View style={ styles.imageContainer }>
-                    <TouchableOpacity>
-                        <Image src={ profile.imageUrl ?? 'https://cdn-icons-png.flaticon.com/512/666/666201.png' } style={ styles.image }/>
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity style={ styles.imageContainer }>
+                    <Image src={ profile.imageUrl ?? 'https://cdn-icons-png.flaticon.com/512/666/666201.png' } style={ styles.image }/>
+                </TouchableOpacity>
 
                 <Text style={ styles.nameHeader }>{ [profile.firstName, profile.lastName].join(' ') }</Text>
 
@@ -144,10 +142,12 @@ const styles = StyleSheet.create({
         borderColor: COLORS.primary,
         borderRadius: 95,
         padding: 20,
-        marginBottom: 15
+        marginBottom: 15,
+        overflow: 'hidden'
     },
     image: {
-        flex: 1
+        flex: 1,
+        borderRadius: 90
     },
     nameHeader: {
         fontSize: 40,

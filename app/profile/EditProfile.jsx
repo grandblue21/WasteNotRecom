@@ -6,11 +6,18 @@ import { Stack, useRouter } from 'expo-router';
 import { COLORS, COLLECTIONS } from '../../constants';
 import getProfile from '../../hook/getProfile';
 import FirebaseApp from '../../helpers/FirebaseApp';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import * as ImagePicker from 'expo-image-picker';
+import moment from 'moment';
 
 const EditProfile = () => {
 
+
+    // Set firebase instance
+    const FBApp = new FirebaseApp();
     const router = useRouter();
     const profile = getProfile().profile;
+    const [image, setImage] = useState(profile.imageUrl);
     const [firstName, setFirstName] = useState(profile.first_name);
     const [lastName, setLastName] = useState(profile.last_name);
     const [email, setEmail] = useState(profile.email);
@@ -21,38 +28,85 @@ const EditProfile = () => {
         // Remove keyboard
         Keyboard.dismiss();
 
-        // Set firebase instance
-        const FBApp = new FirebaseApp();
-
         try {
 
             const new_profile = {
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
-                contactNum: phone,
+                contactNum: phone ?? null,
                 address: address
             }
+
+            // Handle finish
+            const handleFinish = async () => {
+                
+                console.log(new_profile);
+                // Update DB
+                await FBApp.db.update(COLLECTIONS.user, new_profile, profile.id);
+
+                // Update Session
+                await FBApp.session.set('user', JSON.stringify({ ...profile, ...new_profile }));
+
+                // Reroute to profile
+                router.replace('/profile/Profile');
+
+                // Show message
+                ToastAndroid.showWithGravity('Profile updated', ToastAndroid.LONG, ToastAndroid.TOP);
+            }
             
-            // Update DB
-            await FBApp.db.update(COLLECTIONS.user, new_profile, profile.id);
+            // There is image uploaded
+            if (image) {
 
-            // Update Session
-            await FBApp.session.set('user', JSON.stringify({ ...profile, ...new_profile }));
+                const fetchResponse = await fetch(image);
+                const file = await fetchResponse.blob();
+                const storage = getStorage(FBApp.getInstance());
+                const storageRef = ref(storage, 'Admin_Profile/' + profile.userId + moment().format('_YYYY-MM-DDDD-HH-mm-ss') + '.jpg');
+                const uploadTask = uploadBytesResumable(storageRef, file);
 
-            // Reroute to profile
-            router.replace('/profile/Profile');
-
-            ToastAndroid.showWithGravity('Profile updated', ToastAndroid.LONG, ToastAndroid.TOP);
-            
-        } catch (error) {
+                // Listen for state changes, errors, and completion of the upload.
+                uploadTask.on('state_changed', () => {
+                    // Uploading
+                }, () => {
+                    // Error
+                    throw 'Failed to upload image';
+                }, async () => {
+                    // Done
+                    await getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        new_profile.imageUrl = downloadURL; handleFinish(); console.log(downloadURL);
+                    });
+                });
+            }
+            else {
+                handleFinish();
+            }
+        }
+        catch (error) {
             // ToastAndroid.showWithGravity(error, ToastAndroid.LONG, ToastAndroid.TOP);
             console.log(error)
         }
     }
+    const handleImagePress = async () => {
+
+        // Upload image
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1
+        });
+    
+        // Check if cancelled
+        if (result.canceled) {
+            return;
+        }
+
+        setImage(result.assets[0].uri);
+    }
 
     // Runs after profile has been loaded
     useEffect(() => {
+        setImage(profile.imageUrl);
         setFirstName(profile.firstName);
         setLastName(profile.lastName);
         setEmail(profile.email);
@@ -77,8 +131,8 @@ const EditProfile = () => {
 
             <View style={ styles.body }>
                 
-                <TouchableOpacity style={ styles.imageContainer }>
-                    <Image src={ profile.imageUrl ?? 'https://cdn-icons-png.flaticon.com/512/666/666201.png' } style={ styles.image }/>
+                <TouchableOpacity style={ styles.imageContainer } onPress={ handleImagePress }>
+                    <Image src={ image ?? 'https://cdn-icons-png.flaticon.com/512/666/666201.png' } style={ styles.image }/>
                 </TouchableOpacity>
 
                 <Text style={ styles.nameHeader }>Edit</Text>
@@ -173,10 +227,12 @@ const styles = StyleSheet.create({
         borderColor: COLORS.primary,
         borderRadius: 95,
         padding: 20,
-        marginBottom: 15
+        marginBottom: 15,
+        overflow: 'hidden'
     },
     image: {
-        flex: 1
+        flex: 1,
+        borderRadius: 90
     },
     nameHeader: {
         fontSize: 40,
