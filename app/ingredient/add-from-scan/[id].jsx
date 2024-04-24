@@ -4,17 +4,20 @@ import { useGlobalSearchParams } from 'expo-router';
 import { COLORS, SIZES, COLLECTIONS, CATEGORIES, INGREDIENT_CLASSIFICATIONS } from '../../../constants';
 import Header from '../../../components/common/header/Header';
 import FirebaseApp from '../../../helpers/FirebaseApp';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useRouter } from 'expo-router';
 import getProfile from '../../../hook/getProfile';
 import DropDownPicker from 'react-native-dropdown-picker';
 import moment from 'moment/moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Checkbox from 'expo-checkbox';
+import * as ImagePicker from 'expo-image-picker';
 
 const Ingredient = () => {
 
     const router = useRouter();
     const { id } = useGlobalSearchParams();
+    const [image, setImage] = useState(null);
     const [name, setName] = useState('');
     const [quantity, setQuantity] = useState('');
     const [expDate, setExpDate] = useState(new Date(moment().format('YYYY-MM-DD')));
@@ -39,7 +42,7 @@ const Ingredient = () => {
                 Item_name: name,
                 Restaurant_id: profile.adminId,
                 category: category,
-                image: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Foppenheimerusa.com%2Fwp-content%2Fthemes%2Foppenheimer%2Fassets%2Fimages%2Fproduct-placeholder.jpg&f=1&nofb=1&ipt=66fdf705465b3aaaa8e0b1458f5450cd7d60dd360b48ed5e8679d0293ce68a01&ipo=images',
+                image: image ?? 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Foppenheimerusa.com%2Fwp-content%2Fthemes%2Foppenheimer%2Fassets%2Fimages%2Fproduct-placeholder.jpg&f=1&nofb=1&ipt=66fdf705465b3aaaa8e0b1458f5450cd7d60dd360b48ed5e8679d0293ce68a01&ipo=images',
                 quantity_left: isMarketItem ? 0 : quantity,
                 total_quantity: quantity,
                 classifications: classifications.filter(x => x.checked).map(x => x.name)
@@ -51,8 +54,8 @@ const Ingredient = () => {
             }
 
             // Check data
-            Object.values(data).map((value) => {
-                if (!value) {
+            Object.values(data).map((value, index) => {
+                if (!value && typeof value == null) {
                     throw 'Fill in required fields';
                 }
             });
@@ -61,72 +64,102 @@ const Ingredient = () => {
             if (isMarketItem && !price) {
                 throw 'Price is required for Market Items';
             }
+
+            // Handle finish
+            const handleFinish = async () => {
+                
+                // Insert Ingredient
+                const result = await FBApp.db.insert(COLLECTIONS.ingredients, data);
+
+                // Check if added
+                if (!result) {
+                    throw 'Failed to add ingredient';
+                }
+
+                // Insert History
+                const history = await FBApp.db.insert(COLLECTIONS.ingredients_history, {
+                    ItemId: id,
+                    item_quantity: quantity,
+                    Expiry_date: moment(expDate).format('YYYY-MM-DD'),
+                    Date_added: moment().format('YYYY-MM-DD')
+                });
+
+                // Check if added
+                if (!history) {
+                    throw 'Failed to add ingredient';
+                }
+
+                // Include market if for sale
+                if (isMarketItem) {
+
+                    // Insert Market Request Item
+                    const request = await FBApp.db.insert(COLLECTIONS.market_request, {
+                        item_id: id,
+                        Date: moment().format('YYYY-MM-DD'),
+                        Item_name: name,
+                        price: price,
+                        item_quantity: quantity,
+                        Staff_id: profile.id,
+                        Restaurant_id: profile.adminId
+                    });
+
+                    // Check if added
+                    if (!request) {
+                        throw 'Failed to add ingredient';
+                    }
+
+                    // Insert Sale Item
+                    const saleItem = await FBApp.db.insert(COLLECTIONS.sale_items, {
+                        Date: moment().format('YYYY-MM-DD'),
+                        ItemId: id,
+                        Item_name: name,
+                        Price: price,
+                        Quantity: quantity,
+                        Staff_id: profile.id,
+                        Restaurant_Id: profile.adminId
+                    });
+                    
+                    // Check if added
+                    if (!saleItem) {
+                        throw 'Failed to add ingredient';
+                    }
+                }
+
+                // Show notif
+                ToastAndroid.showWithGravity('Ingredient Added', ToastAndroid.LONG, ToastAndroid.TOP);
+
+                // Redirect to ingredients
+                router.replace('/inventory/Inventory');
+            }
             
             // Set Firebase Instance
             const FBApp = new FirebaseApp();
             
-            // Insert Ingredient
-            const result = await FBApp.db.insert(COLLECTIONS.ingredients, data);
+            // There is image uploaded
+            if (image) {
 
-            // Check if added
-            if (!result) {
-                throw 'Failed to add ingredient';
-            }
+                const fetchResponse = await fetch(image);
+                const file = await fetchResponse.blob();
+                const storage = getStorage(FBApp.getInstance());
+                const storageRef = ref(storage, 'ingredient/' + id + moment().format('_YYYY-MM-DDDD-HH-mm-ss') + '.jpg');
+                const uploadTask = uploadBytesResumable(storageRef, file);
 
-            // Insert History
-            const history = await FBApp.db.insert(COLLECTIONS.ingredients_history, {
-                ItemId: id,
-                item_quantity: quantity,
-                Expiry_date: moment(expDate).format('YYYY-MM-DD'),
-                Date_added: moment().format('YYYY-MM-DD')
-            });
-
-            // Check if added
-            if (!history) {
-                throw 'Failed to add ingredient';
-            }
-
-            // Include market if for sale
-            if (isMarketItem) {
-
-                // Insert Market Request Item
-                const request = await FBApp.db.insert(COLLECTIONS.market_request, {
-                    item_id: id,
-                    Date: moment().format('YYYY-MM-DD'),
-                    Item_name: ingredient.Item_name,
-                    price: price,
-                    item_quantity: quantity,
-                    Staff_id: profile.id,
-                    Restaurant_id: profile.adminId
+                // Listen for state changes, errors, and completion of the upload.
+                uploadTask.on('state_changed', () => {
+                    // Uploading
+                }, () => {
+                    // Error
+                    throw 'Failed to upload image';
+                }, async () => {
+                    // Done
+                    await getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        data.image = downloadURL; handleFinish();
+                    });
                 });
-
-                // Check if added
-                if (!request) {
-                    throw 'Failed to add ingredient';
-                }
-
-                // Insert Sale Item
-                const saleItem = await FBApp.db.insert(COLLECTIONS.sale_items, {
-                    Date: moment().format('YYYY-MM-DD'),
-                    ItemId: id,
-                    Item_name: ingredient.Item_name,
-                    Price: price,
-                    Quantity: quantity,
-                    Staff_id: profile.id,
-                    Restaurant_Id: profile.adminId
-                });
-                
-                // Check if added
-                if (!saleItem) {
-                    throw 'Failed to add ingredient';
-                }
             }
-
-            // Show notif
-            ToastAndroid.showWithGravity('Ingredient Added', ToastAndroid.LONG, ToastAndroid.TOP);
-
-            // Redirect to ingredients
-            router.replace('/inventory/Inventory');
+            else {
+                handleFinish();
+            }
         }
         catch (error) {
 
@@ -134,6 +167,23 @@ const Ingredient = () => {
             ToastAndroid.showWithGravity(error, ToastAndroid.LONG, ToastAndroid.TOP);
         }
     };
+    const handleImagePress = async () => {
+
+        // Upload image
+        const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1
+        });
+    
+        // Check if cancelled
+        if (result.canceled) {
+            return;
+        }
+
+        setImage(result.assets[0].uri);
+    }
 
     return <>
         <SafeAreaView style={ styles.container }>
@@ -144,9 +194,9 @@ const Ingredient = () => {
 
                 <ScrollView style={{ flex: 1 }}>
 
-                    <View style={ styles.imageContainer }>
-                        <Image src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Foppenheimerusa.com%2Fwp-content%2Fthemes%2Foppenheimer%2Fassets%2Fimages%2Fproduct-placeholder.jpg&f=1&nofb=1&ipt=66fdf705465b3aaaa8e0b1458f5450cd7d60dd360b48ed5e8679d0293ce68a01&ipo=images" style={ styles.image }></Image>
-                    </View>
+                    <TouchableOpacity onPress={ handleImagePress } style={ styles.imageContainer }>
+                        <Image src={ image ?? 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Foppenheimerusa.com%2Fwp-content%2Fthemes%2Foppenheimer%2Fassets%2Fimages%2Fproduct-placeholder.jpg&f=1&nofb=1&ipt=66fdf705465b3aaaa8e0b1458f5450cd7d60dd360b48ed5e8679d0293ce68a01&ipo=images' } style={ styles.image }></Image>
+                    </TouchableOpacity>
 
                     <View style={ styles.infoContainer }>
 
@@ -267,7 +317,8 @@ const styles = StyleSheet.create({
         height: 187,
         width: 187,
         borderWidth: 1,
-        borderRadius: 94
+        borderRadius: 94,
+        borderColor: COLORS.primary
     },
     infoContainer: {
         flex: 1,

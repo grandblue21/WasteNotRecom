@@ -41,7 +41,6 @@ const EditProfile = () => {
             // Handle finish
             const handleFinish = async () => {
                 
-                console.log(new_profile);
                 // Update DB
                 await FBApp.db.update(COLLECTIONS.user, new_profile, profile.id);
 
@@ -73,7 +72,7 @@ const EditProfile = () => {
                 }, async () => {
                     // Done
                     await getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                        new_profile.imageUrl = downloadURL; handleFinish(); console.log(downloadURL);
+                        new_profile.imageUrl = downloadURL; handleFinish();
                     });
                 });
             }
@@ -242,9 +241,6 @@ const styles = StyleSheet.create({
         textShadowRadius: 5,
         fontWeight: '900',
         marginBottom: 55
-    },
-    infoContainer: {
-        flex: 1
     },
     infoItem: {
         flexDirection: 'row',

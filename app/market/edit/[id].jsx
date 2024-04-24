@@ -194,9 +194,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 94
     },
-    infoContainer: {
-        flex: 1
-    },
     infoItem: {
         flexDirection: 'row',
         justifyContent: 'center',

@@ -55,7 +55,10 @@ const AddBatch = () => {
             }
 
             // Update quantity
-            await FBApp.db.update(COLLECTIONS.ingredients, { total_quantity: history.reduce((total, current) => total + parseInt(current.item_quantity), parseInt(quantity)) }, ingredient.id);
+            await FBApp.db.update(COLLECTIONS.ingredients, {
+                quantity_left: ingredient.quantity_left + quantity,
+                total_quantity: history.reduce((total, current) => total + parseInt(current.item_quantity), parseInt(quantity))
+            }, ingredient.id);
 
             // Show notif
             ToastAndroid.showWithGravity(`New Batch of ${ ingredient.Item_name } Added`, ToastAndroid.LONG, ToastAndroid.TOP);
@@ -109,7 +112,7 @@ const AddBatch = () => {
                     <View style={{ ...styles.infoItem, justifyContent: 'flex-start' }}>
                         <Text style={ styles.infoLabel }>Grams:</Text>
                         <TextInput style={{ ...styles.infoInput, width: 127 }} value={ quantity } onChangeText={ (input) => setQuantity(input) }/>
-                        <Text style={{ fontSize: 24, fontWeight: 'bold' }}>/{ gramsToKg(history.reduce((total, current) => total + parseInt(current.item_quantity), 0), 3) }grams</Text>
+                        <Text style={{ fontSize: 24, fontWeight: 'bold' }}>/{ gramsToKg(ingredient.quantity_left, 3) }kg</Text>
                     </View>
 
                     <View style={ styles.infoItem }>
@@ -163,9 +166,6 @@ const styles = StyleSheet.create({
         width: 187,
         borderWidth: 1,
         borderRadius: 94
-    },
-    infoContainer: {
-        flex: 1
     },
     infoItem: {
         flexDirection: 'row',

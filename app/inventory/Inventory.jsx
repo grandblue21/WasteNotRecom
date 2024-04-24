@@ -67,49 +67,51 @@ const Inventory = () => {
             <View style={ styles.body }>
                 <Text style={ styles.txtHeader }>Everything you need</Text>
                 <View style={ styles.contentContainer }>
-                    <Categories categories={ ['All', ...CATEGORIES] } onCategoryChange={ handleCategoryChange } />
+                    {
+                        inventoryItems.length > 0 ? <>
+                            <Categories categories={ ['All', ...CATEGORIES] } onCategoryChange={ handleCategoryChange } />
+                            <View style={ styles.headerLabelContainer }>
+                                <Text style={ styles.headerLabel }>Status</Text>
+                                <Text style={ styles.headerLabel }>Product Name</Text>
+                                <Text style={ styles.headerLabel }>In Stock (kg)</Text>
+                            </View>
 
-                    {/* Header Label */}
-                    <View style={ styles.headerLabelContainer }>
-                        <Text style={ styles.headerLabel }>Status</Text>
-                        <Text style={ styles.headerLabel }>Product Name</Text>
-                        <Text style={ styles.headerLabel }>In Stock (kg)</Text>
-                    </View>
-
-                    <FlatList
-                        data={ inventoryItems } 
-                        keyExtractor={ (item, index) => index }
-                        showsVerticalScrollIndicator={ false }
-                        renderItem={ ({ item }) => (
-                            <View style={ styles.itemContainer }>
-                                {/* Background Container */}
-                                <View style={ styles.backgroundContainer }>
-                                    {/* Status Indicator */}
-                                    <View
-                                        style={ [
-                                            styles.statusIndicator,
-                                            { backgroundColor: (item.quantity_left / item.total_quantity) * 100 >= 10 ? 'green' : (item.stock > 0 ? 'yellow' : 'red') },
-                                        ] }
-                                    />
-                                    {/* Item Name and Picture */}
-                                    <View style={ styles.itemInfoContainer }>
-                                        <Image source={{ uri: item.image }} style={ styles.itemImage } />
-                                        <View style={ styles.itemDetails }>
-                                            <Text style={ styles.itemName }>{ item.Item_name }</Text>
+                            <FlatList
+                                data={ inventoryItems } 
+                                keyExtractor={ (item, index) => index }
+                                showsVerticalScrollIndicator={ false }
+                                renderItem={ ({ item }) => (
+                                    <View style={ styles.itemContainer }>
+                                        {/* Background Container */}
+                                        <View style={ styles.backgroundContainer }>
+                                            {/* Status Indicator */}
+                                            <View
+                                                style={ [
+                                                    styles.statusIndicator,
+                                                    { backgroundColor: (item.quantity_left / item.total_quantity) * 100 >= 10 ? 'green' : (item.stock > 0 ? 'yellow' : 'red') },
+                                                ] }
+                                            />
+                                            {/* Item Name and Picture */}
+                                            <View style={ styles.itemInfoContainer }>
+                                                <Image source={{ uri: item.image }} style={ styles.itemImage } />
+                                                <View style={ styles.itemDetails }>
+                                                    <Text style={ styles.itemName }>{ item.Item_name }</Text>
+                                                </View>
+                                            </View>
+                                            {/* In Stock Label with kilograms */}
+                                            <Text style={ styles.inStockLabel }>{ gramsToKg(item.quantity_left ?? 0, 1) } kg </Text>
+                                            <TouchableOpacity style={ { paddingLeft: 10 } } onPress={ () => router.replace(`/market/add-saleitem/${item.ItemId}`) }>
+                                                <FontAwesome name="cart-plus" size={ 20 } color="#389F4F" />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity style={ { paddingLeft: 10 } } onPress={ () => router.replace(`/ingredient/history/${item.id}`) }>
+                                                <AntDesign name="doubleright" size={ 20 } color="#389F4F" />
+                                            </TouchableOpacity>
                                         </View>
                                     </View>
-                                    {/* In Stock Label with kilograms */}
-                                    <Text style={ styles.inStockLabel }>{ gramsToKg(item.quantity_left, 1) } kg </Text>
-                                    <TouchableOpacity style={ { paddingLeft: 10 } } onPress={ () => router.replace(`/market/add-saleitem/${item.ItemId}`) }>
-                                        <FontAwesome name="cart-plus" size={ 20 } color="#389F4F" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={ { paddingLeft: 10 } } onPress={ () => router.replace(`/ingredient/history/${item.id}`) }>
-                                        <AntDesign name="doubleright" size={ 20 } color="#389F4F" />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )}
-                    />
+                                )}
+                            />
+                        </> : <Image src={ 'https://cdn.dribbble.com/users/634336/screenshots/2246883/_____.png' } style={{ height: 111, width: 102, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} />
+                    }
                 </View>
                 <TouchableOpacity style={ styles.plusButton } onPress={ () => router.replace('/ingredient/AddIngredient') }>
                     <View style={ styles.plusButtonInner }>

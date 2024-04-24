@@ -53,17 +53,19 @@ const SaleItems = () => {
             </View>
 
             <View style={styles.itemContainer}>
-                <FlatList
-                    data={ items }
-                    renderItem={({ item }) => (
-                        <TouchableOpacity>
-                            <Image src={ item.data.image } style={styles.item} />
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={(item, index) => index}
-                    contentContainerStyle={{ columnGap: SIZES.medium }}
-                    horizontal
-                />
+                {
+                    items.length > 0 ? <FlatList
+                        data={ items }
+                        renderItem={({ item }) => (
+                            <TouchableOpacity>
+                                <Image src={ item.data.image } style={styles.item} />
+                            </TouchableOpacity>
+                        )}
+                        keyExtractor={(item, index) => index}
+                        contentContainerStyle={{ columnGap: SIZES.medium }}
+                        horizontal
+                    /> : <Image src={ 'https://cdn.dribbble.com/users/634336/screenshots/2246883/_____.png' } style={{ ...styles.item, alignSelf: 'center' }} />
+                }
             </View>
         </View>
     )

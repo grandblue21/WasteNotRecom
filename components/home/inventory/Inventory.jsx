@@ -30,17 +30,19 @@ const Inventory = () => {
             </View>
 
             <View style={styles.inventoryContainer}>
-                <FlatList
-                    data={ ingredients }
-                    renderItem={({ item }) => (
-                        <TouchableOpacity onPress={ () => router.replace(`/ingredient/history/${item.id}`) }>
-                            <Image src={ item.image } style={styles.inventory} />
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={(item, index) => index}
-                    contentContainerStyle={{ columnGap: SIZES.medium }}
-                    horizontal
-                />
+                {
+                    ingredients.length > 0 ? <FlatList
+                        data={ ingredients }
+                        renderItem={({ item }) => (
+                            <TouchableOpacity onPress={ () => router.replace(`/ingredient/history/${item.id}`) }>
+                                <Image src={ item.image } style={styles.inventory} />
+                            </TouchableOpacity>
+                        )}
+                        keyExtractor={(item, index) => index}
+                        contentContainerStyle={{ columnGap: SIZES.medium }}
+                        horizontal
+                    /> : <Image src={ 'https://cdn.dribbble.com/users/634336/screenshots/2246883/_____.png' } style={{ ...styles.inventory, alignSelf: 'center' }} />
+                }
             </View>
         </>
     )

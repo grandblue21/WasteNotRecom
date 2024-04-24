@@ -60,22 +60,26 @@ const Menu = () => {
                     </TouchableOpacity>
                 </View>
                 <View style={ styles.contentContainer }>
-                    <Categories categories={ ['All', ...MENU_CATEGORIES] } onCategoryChange={ handleCategoryChange } />
-                    <FlatList
-                        showsVerticalScrollIndicator={ false }
-                        data={ menuList } 
-                        keyExtractor={ (item, index) => index }
-                        numColumns={ 2 }
-                        renderItem={ ({ item }) => (
-                            <TouchableOpacity style={ styles.menuItem } onPress={ () => router.replace(`/menu/menu-dish/${ item.id }`) }>
-                                <View style={ styles.menuItemContainer }>
-                                    <Image src={ item.imageUrl ?? 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F282%2F282465.png&f=1&nofb=1&ipt=882638a8b113a96b2f827e92de88e9728c11378025d1842bb22cea7e21f37d9c&ipo=images' } style={ styles.menuImage } />
-                                    <Text style={ styles.menuName } numberOfLines={1}>{ item.dishName }</Text>
-                                    <Text style={ styles.menuPrice }>₱{ (item.price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }</Text>
-                                </View>
-                            </TouchableOpacity>
-                        ) }
-                    />
+                    {
+                        menuList.length > 0 ? <>
+                            <Categories categories={ ['All', ...MENU_CATEGORIES] } onCategoryChange={ handleCategoryChange } />
+                            <FlatList
+                                showsVerticalScrollIndicator={ false }
+                                data={ menuList } 
+                                keyExtractor={ (item, index) => index }
+                                numColumns={ 2 }
+                                renderItem={ ({ item }) => (
+                                    <TouchableOpacity style={ styles.menuItem } onPress={ () => router.replace(`/menu/menu-dish/${ item.id }`) }>
+                                        <View style={ styles.menuItemContainer }>
+                                            <Image src={ item.imageUrl ?? 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F282%2F282465.png&f=1&nofb=1&ipt=882638a8b113a96b2f827e92de88e9728c11378025d1842bb22cea7e21f37d9c&ipo=images' } style={ styles.menuImage } />
+                                            <Text style={ styles.menuName } numberOfLines={1}>{ item.dishName }</Text>
+                                            <Text style={ styles.menuPrice }>₱{ (item.price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                ) }
+                            />
+                        </> : <Image src={ 'https://cdn.dribbble.com/users/634336/screenshots/2246883/_____.png' } style={{ ...styles.menuImage, alignSelf: 'center' }} />
+                    }
                 </View>
             </View>
 
