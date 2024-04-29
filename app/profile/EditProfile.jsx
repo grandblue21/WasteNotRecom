@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
         marginRight: 20
     },
     infoLabel: {
-        textAlign: 'right',
+        paddingLeft: 10,
         textDecorationLine: 'underline',
         fontSize: 15,
         width: '40%',

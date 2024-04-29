@@ -31,6 +31,11 @@ const AddBatch = () => {
             if (!ingredient.id) {
                 throw 'Loading please wait';
             }
+
+            // Check if number
+            if (isNaN(parseFloat(quantity))) {
+                throw 'Quantity entered is not a number';
+            }
             
             const data = {
                 ItemId: ingredient.ItemId,

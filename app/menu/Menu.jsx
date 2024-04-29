@@ -7,7 +7,7 @@ import Search from '../../components/home/search/Search';
 import Navigation from '../../components/common/navigation/Navigation';
 import getProfile from '../../hook/getProfile';
 import getMenu from '../../hook/getMenu';
-import {  MENU_CATEGORIES, SIZES } from '../../constants';
+import { images, MENU_CATEGORIES, SIZES } from '../../constants';
 import { AntDesign } from '@expo/vector-icons';
 
 const Menu = () => {
@@ -78,7 +78,7 @@ const Menu = () => {
                                     </TouchableOpacity>
                                 ) }
                             />
-                        </> : <Image src={ 'https://cdn.dribbble.com/users/634336/screenshots/2246883/_____.png' } style={{ ...styles.menuImage, alignSelf: 'center' }} />
+                        </> : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ ...styles.menuImage, alignSelf: 'center' }} />
                     }
                 </View>
             </View>

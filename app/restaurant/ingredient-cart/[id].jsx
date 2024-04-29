@@ -22,7 +22,6 @@ const IngredientCart = () => {
         // Add to wishlist
         const result = await FBApp.db.insert(COLLECTIONS.wishlist, {
             Sale_id: id,
-            Quantity: quantity,
             Total: parseFloat(saleItem.Price) * parseFloat(quantity),
             User_id: profile.userId
         });
@@ -100,14 +99,6 @@ const IngredientCart = () => {
 
                     </View>
 
-                    <View style={{ ...styles.detail, justifyContent: 'flex-start' }}>
-
-                        <Text style={ styles.detailLabel }>Avail</Text>
-                        <TextInput style={{ ...styles.detailInput, width: '20%' }} value={ quantity } onChangeText={ input => setQuantity(input) }/>
-                        <Text style={{ fontSize: 30, fontWeight: 'bold', marginLeft: 5 }}>{ gramsToKg(saleItem.Quantity, 2) }/kg</Text>
-
-                    </View>
-
                 </View>
 
                 <View style={ styles.buttonContainer }>
@@ -131,7 +122,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFF',
     },
     body: {
-        flex: 1,
         padding: SIZES.small
     },
     ingredientImage: {
@@ -142,9 +132,6 @@ const styles = StyleSheet.create({
         borderColor: COLORS.primary,
         borderRadius: 93,
         marginBottom: 40
-    },
-    detailsContainer: {
-        flex: 1
     },
     detail: {
         flexDirection: 'row',

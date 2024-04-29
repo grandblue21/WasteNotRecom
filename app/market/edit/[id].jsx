@@ -59,6 +59,16 @@ const EditSaleItem = () => {
                 }
             });
 
+            // Check if number
+            if (isNaN(parseFloat(quantity))) {
+                throw 'Quantity entered is not a number';
+            }
+
+            // Check if number
+            if (isNaN(parseFloat(price))) {
+                throw 'Price entered is not a number';
+            }
+
             // Check if not more than quantity
             if (parseInt(quantity) > parseInt(ingredient.quantity_left) + parseInt(saleItem.Quantity)) {
                 throw 'Sale quantity is more than what is left';

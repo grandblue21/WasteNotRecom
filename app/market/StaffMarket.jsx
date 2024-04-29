@@ -5,7 +5,7 @@ import { MaterialIcons,FontAwesome,AntDesign } from '@expo/vector-icons';
 import Header from '../../components/common/header/Header';
 import Search from '../../components/home/search/Search';
 import Navigation from '../../components/common/navigation/Navigation';
-import { CATEGORIES, COLLECTIONS } from '../../constants';
+import { images, CATEGORIES, COLLECTIONS } from '../../constants';
 import getSaleItems from '../../hook/getSaleItems';
 import getProfile from '../../hook/getProfile';
 import FirebaseApp from '../../helpers/FirebaseApp';
@@ -129,7 +129,7 @@ const MarketScreen = () => {
                                     </View>
                                 )}
                             />
-                        </> : <Image src={ 'https://cdn.dribbble.com/users/634336/screenshots/2246883/_____.png' } style={{ height: 140, width: 120, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} />
+                        </> : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ height: 140, width: 120, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} />
                     }
                 </View>
                 

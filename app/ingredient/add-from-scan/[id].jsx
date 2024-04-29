@@ -60,9 +60,19 @@ const Ingredient = () => {
                 }
             });
 
+            // Check if number
+            if (isNaN(parseFloat(quantity))) {
+                throw 'Quantity entered is not a number';
+            }
+
             // Market additional check
             if (isMarketItem && !price) {
                 throw 'Price is required for Market Items';
+            }
+
+            // Check if number
+            if (isMarketItem && isNaN(parseFloat(price))) {
+                throw 'Price entered is not a number';
             }
 
             // Handle finish

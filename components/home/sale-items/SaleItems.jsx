@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
-import { COLORS, FONT, SIZES, COLLECTIONS } from '../../../constants';
+import { images, COLORS, FONT, SIZES, COLLECTIONS } from '../../../constants';
 import { FontAwesome } from '@expo/vector-icons';
 import getProfile from '../../../hook/getProfile';
 import getSaleItems from '../../../hook/getSaleItems';
@@ -64,7 +64,7 @@ const SaleItems = () => {
                         keyExtractor={(item, index) => index}
                         contentContainerStyle={{ columnGap: SIZES.medium }}
                         horizontal
-                    /> : <Image src={ 'https://cdn.dribbble.com/users/634336/screenshots/2246883/_____.png' } style={{ ...styles.item, alignSelf: 'center' }} />
+                    /> : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ ...styles.item, alignSelf: 'center' }} />
                 }
             </View>
         </View>

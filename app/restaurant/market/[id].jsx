@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Header from '../../../components/common/header/Header';
-import { FONT, COLORS, SIZES, COLLECTIONS, CATEGORIES } from '../../../constants';
+import { FONT, COLORS, SIZES, COLLECTIONS, CATEGORIES, images } from '../../../constants';
 import Navigation from '../../../components/common/navigation/Navigation';
 import { useRouter } from 'expo-router';
 import Categories from '../../../components/common/navigation/Categories';
@@ -112,7 +112,7 @@ const Restaurant = () => {
                 </View>
 
                 <TouchableOpacity style={ styles.restaurantContainer } onPress={ () => router.replace(`/restaurant/details/${id}`) }>
-                    <Image src={ restaurant.restaurantLogo } style={ styles.restaurantImage }/>
+                    <Image src={ restaurant.restaurantLogo ?? images.RESTAURANT_LOGO_PLACEHOLDER_IMG } style={ styles.restaurantImage }/>
                     <Text style={ styles.restaurantName } numberOfLines={ 2 } ellipsizeMode="tail">{ restaurant.restaurantName }</Text>
                 </TouchableOpacity>
 

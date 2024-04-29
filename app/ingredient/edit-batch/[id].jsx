@@ -43,6 +43,11 @@ const EditBatch = () => {
                 }
             });
 
+            // Check if number
+            if (isNaN(parseFloat(quantity))) {
+                throw 'Quantity entered is not a number';
+            }
+
             // Insert History
             const history = await FBApp.db.update(COLLECTIONS.ingredients_history, data, batch.id);
 

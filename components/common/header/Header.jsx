@@ -47,7 +47,8 @@ const styles = StyleSheet.create({
     headerText: {
         fontFamily: FONT.medium,
         fontSize: 40,
-        marginRight: 'auto'
+        marginRight: 'auto',
+        paddingLeft: 10
     },
     back: {
         height: 38,

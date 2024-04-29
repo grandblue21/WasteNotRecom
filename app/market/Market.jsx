@@ -1,17 +1,38 @@
 import { SafeAreaView, ScrollView, View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Header from '../../components/common/header/Header';
-import { FONT, SIZES } from '../../constants';
+import { images, COLLECTIONS, SIZES } from '../../constants';
 import Search from '../../components/home/search/Search';
 import Navigation from '../../components/common/navigation/Navigation';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import getRestaurants from '../../hook/getRestaurants';
-
+import { useEffect, useState } from 'react';
+import FirebaseApp from '../../helpers/FirebaseApp';
 
 const Market = () => {
 
-    const { restaurants } = getRestaurants();
     const router = useRouter();
+    const FBApp = new FirebaseApp();
+    const { restaurants } = getRestaurants();
+    const [saleItems, setSaleItems] = useState([]);
+
+    useEffect(() => {
+
+        const getSaleItems = async () => {
+            
+            // Iterate
+            Promise.all(restaurants.map(async (x) => await FBApp.db.gets(COLLECTIONS.sale_items, {
+                column: 'Restaurant_Id',
+                comparison: '==',
+                value: x.id
+            }))).then(([x]) =>x.length > 0 && setSaleItems([...saleItems, ...x]));
+        }
+
+        // Restaurants
+        if (restaurants.length > 0) {
+            getSaleItems();
+        }
+    }, [restaurants]);console.log(saleItems, restaurants.map(x => x.id));
 
     return (
         <SafeAreaView style={ styles.container }>
@@ -27,10 +48,10 @@ const Market = () => {
                     <Text style={ styles.headerText }>Restaurants</Text>
 
                     {
-                        restaurants.map((restaurant, index) => (
+                        restaurants.filter((x) => saleItems.map((y) => y.Restaurant_Id).includes(x.id)).length > 0 ? restaurants.filter((x) => saleItems.map((y) => y.Restaurant_Id).includes(x.id)).map((restaurant, index) => (
                             <TouchableOpacity key={ index } style={ styles.restaurant } onPress={ () => router.replace(`/restaurant/market/${restaurant.id}`) }>
 
-                                <Image src={ restaurant.restaurantLogo } style={ styles.restaurantImage }/>
+                                <Image src={ restaurant.restaurantLogo ?? images.RESTAURANT_LOGO_PLACEHOLDER_IMG } style={ styles.restaurantImage }/>
 
                                 <Text style={ styles.restaurantName }>{ restaurant.restaurantName }</Text>
 
@@ -40,7 +61,7 @@ const Market = () => {
                                 </View>
                                 
                             </TouchableOpacity>
-                        ))
+                        )) : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ alignSelf: 'center', flex: 1, height: 160, width: 160 }} />
                     }
 
                 </ScrollView>

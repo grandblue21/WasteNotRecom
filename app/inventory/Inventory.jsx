@@ -8,7 +8,7 @@ import Categories from '../../components/common/navigation/Categories';
 import Navigation from '../../components/common/navigation/Navigation';
 import getIngredients from '../../hook/getIngredients';
 import getProfile from '../../hook/getProfile';
-import { CATEGORIES, COLLECTIONS } from '../../constants';
+import { images, CATEGORIES, COLLECTIONS } from '../../constants';
 import FirebaseApp from '../../helpers/FirebaseApp';
 import { gramsToKg } from '../../helpers/Converter';
 import { FontAwesome } from '@expo/vector-icons';
@@ -110,7 +110,7 @@ const Inventory = () => {
                                     </View>
                                 )}
                             />
-                        </> : <Image src={ 'https://cdn.dribbble.com/users/634336/screenshots/2246883/_____.png' } style={{ height: 111, width: 102, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} />
+                        </> : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ height: 111, width: 102, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} />
                     }
                 </View>
                 <TouchableOpacity style={ styles.plusButton } onPress={ () => router.replace('/ingredient/AddIngredient') }>

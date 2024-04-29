@@ -1,5 +1,5 @@
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
-import { COLORS, FONT, SIZES } from '../../../constants';
+import { images, COLORS, FONT, SIZES } from '../../../constants';
 import { FontAwesome } from '@expo/vector-icons';
 import getRestaurants from '../../../hook/getRestaurants';
 import { useRouter } from 'expo-router';
@@ -20,17 +20,21 @@ const Restaurants = () => {
             </View>
 
             <View style={styles.restaurantContainer}>
-                <FlatList
-                    data={ restaurants }
-                    renderItem={({ item }) => (
-                        <TouchableOpacity onPress={ () => router.replace(`/restaurant/market/${item.id}`) }>
-                            <Image src={ item.restaurantLogo } style={styles.restaurant} />
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={(item, index) => index}
-                    contentContainerStyle={{ columnGap: SIZES.medium }}
-                    horizontal
-                />
+                {
+                    restaurants.length > 0 ? <>
+                        <FlatList
+                            data={ restaurants }
+                            renderItem={({ item }) => (
+                                <TouchableOpacity onPress={ () => router.replace(`/restaurant/market/${item.id}`) }>
+                                    <Image src={ item.restaurantLogo ?? images.RESTAURANT_LOGO_PLACEHOLDER_IMG } style={styles.restaurant} />
+                                </TouchableOpacity>
+                            )}
+                            keyExtractor={(item, index) => index}
+                            contentContainerStyle={{ columnGap: SIZES.medium }}
+                            horizontal
+                        />
+                    </> : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ ...styles.restaurant, alignSelf: 'center' }} />
+                }
             </View>
         </View>
     )

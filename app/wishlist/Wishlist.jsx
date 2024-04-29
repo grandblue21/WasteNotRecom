@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView, ScrollView, View, Text, Image, TextInput, TouchableOpacity, Alert, ToastAndroid } from 'react-native';
 import Header from '../../components/common/header/Header';
 import Search from '../../components/home/search/Search';
-import { COLLECTIONS, COLORS } from '../../constants';
+import { COLLECTIONS, COLORS, images } from '../../constants';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import getProfile from '../../hook/getProfile';
@@ -124,7 +124,7 @@ const Wishlist = () => {
                         <View style={ styles.restaurant } key={index}>
 
                             <View style={ styles.restaurantContainer }>
-                                <Image src={ restaurant.restaurantLogo } style={ styles.restaurantImage }/>
+                                <Image src={ restaurant.restaurantLogo ?? images.RESTAURANT_LOGO_PLACEHOLDER_IMG } style={ styles.restaurantImage }/>
                                 <Text style={ styles.restaurantName } numberOfLines={ 2 } ellipsizeMode="tail">{ restaurant.restaurantName }</Text>
                             </View>
 

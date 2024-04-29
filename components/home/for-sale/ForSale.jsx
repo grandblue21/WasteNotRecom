@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
-import { COLORS, FONT, SIZES, COLLECTIONS } from '../../../constants';
+import { images, COLORS, FONT, SIZES, COLLECTIONS } from '../../../constants';
 import { FontAwesome } from '@expo/vector-icons';
 import getSaleItems from '../../../hook/getSaleItems';
 import FirebaseApp from '../../../helpers/FirebaseApp';
@@ -43,17 +43,21 @@ const ForSale = () => {
             </View>
 
             <View style={styles.itemContainer}>
-                <FlatList
-                    data={ items }
-                    renderItem={({ item }) => (
-                        <TouchableOpacity onPress={ () => router.replace(`/restaurant/ingredient-cart/${ item.id }`) }>
-                            <Image source={{ uri: item.image }} style={styles.item} />
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={(item, index) => index}
-                    contentContainerStyle={{ columnGap: SIZES.medium }}
-                    horizontal
-                />
+                {
+                    items.length > 0 ? <>
+                        <FlatList
+                            data={ items }
+                            renderItem={({ item }) => (
+                                <TouchableOpacity onPress={ () => router.replace(`/restaurant/ingredient-cart/${ item.id }`) }>
+                                    <Image source={{ uri: item.image }} style={styles.item} />
+                                </TouchableOpacity>
+                            )}
+                            keyExtractor={(item, index) => index}
+                            contentContainerStyle={{ columnGap: SIZES.medium }}
+                            horizontal
+                        />
+                    </> : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ ...styles.item, alignSelf: 'center' }} />
+                }
             </View>
         </View>
     )
