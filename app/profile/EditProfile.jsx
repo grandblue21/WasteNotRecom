@@ -12,7 +12,6 @@ import moment from 'moment';
 
 const EditProfile = () => {
 
-
     // Set firebase instance
     const FBApp = new FirebaseApp();
     const router = useRouter();

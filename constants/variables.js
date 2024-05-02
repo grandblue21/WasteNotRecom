@@ -8,7 +8,8 @@ const COLLECTIONS = {
     sale_items: 'sale_items',
     menu: 'menu_dish',
     wishlist: 'wishlist',
-    recommendation: 'recommendations'
+    recommendation: 'recommendations',
+    notification: 'notifications'
 }
 
 const ROLES = {

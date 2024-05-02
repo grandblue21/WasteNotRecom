@@ -1,10 +1,13 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import ScreenHeaderBtn from './ScreenHeaderBtn';
 import { FontAwesome } from '@expo/vector-icons';
 import { FONT } from '../../../constants';
 
 const Header = ({ title, showBack, hideTitle, hideNotification, showBackOverride }) => {
+
+    const router = useRouter();
+
     return (
         <Stack.Screen options={{
             headerStyle: { backgroundColor: '#FFF' },
@@ -20,7 +23,7 @@ const Header = ({ title, showBack, hideTitle, hideNotification, showBackOverride
             ),
             headerRight: () => (
                 hideNotification ? null :
-                <ScreenHeaderBtn component={<FontAwesome name="bell-o" style={{ fontSize: 23 }} />} />
+                <ScreenHeaderBtn handlePress={ () => router.push('notification/Notification') } component={<FontAwesome name="bell-o" style={{ fontSize: 23 }} />} />
             ),
             headerTitle: () => (
                 hideTitle ? null :

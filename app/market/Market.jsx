@@ -32,7 +32,7 @@ const Market = () => {
         if (restaurants.length > 0) {
             getSaleItems();
         }
-    }, [restaurants]);console.log(saleItems, restaurants.map(x => x.id));
+    }, [restaurants]);
 
     return (
         <SafeAreaView style={ styles.container }>

@@ -21,10 +21,10 @@ const AddIngredient = () => {
   };
 
   const handleBarCodeScanned = async ({ data }) => {
-    const existing = await FBApp.db.gets(COLLECTIONS.ingredients, { column: 'id', comparison: '==', value: data });
+    const existing = await FBApp.db.gets(COLLECTIONS.ingredients, { column: 'ItemId', comparison: '==', value: data });
     setScanned(true);
 
-    if (existing.filter(x => x.restaurantId === profile.adminId).length > 0) {
+    if (existing.filter(x => x.Restaurant_id === profile.adminId).length > 0) {
       router.replace(`/ingredient/add-batch/${existing[0].id}`);
     } else {
       router.replace(`/ingredient/add-from-scan/${data}`);

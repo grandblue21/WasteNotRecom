@@ -5,7 +5,7 @@ import { MaterialIcons,FontAwesome,AntDesign } from '@expo/vector-icons';
 import Header from '../../components/common/header/Header';
 import Search from '../../components/home/search/Search';
 import Navigation from '../../components/common/navigation/Navigation';
-import { images, CATEGORIES, COLLECTIONS } from '../../constants';
+import { images, CATEGORIES, COLLECTIONS, COLORS } from '../../constants';
 import getSaleItems from '../../hook/getSaleItems';
 import getProfile from '../../hook/getProfile';
 import FirebaseApp from '../../helpers/FirebaseApp';
@@ -75,7 +75,7 @@ const MarketScreen = () => {
                                 data={ marketItems }
                                 keyExtractor={ (item, index) => index }
                                 numColumns={ 2}
-                                renderItem={ ({ item }) => (
+                                renderItem={ ({ item }) => item.data && (
                                     <View style={ styles.marketItem }>
                                         <View style={ styles.marketItemContainer }>
                                             <Image src={ item.data.image } style={ styles.marketImage } />
@@ -117,6 +117,11 @@ const MarketScreen = () => {
                                                 <TouchableOpacity onPress={ () => router.replace(`/market/edit/${item.id}`) }>
                                                     <View style={ styles.iconBackground }>
                                                         <MaterialIcons name="edit" size={ 18 } color="#389F4F" style={ styles.icon } />
+                                                    </View>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity>
+                                                    <View style={ styles.iconBackground }>
+                                                        <MaterialIcons name="restaurant" size={ 18 } color="#389F4F" style={ styles.icon } />
                                                     </View>
                                                 </TouchableOpacity>
                                             </View>
