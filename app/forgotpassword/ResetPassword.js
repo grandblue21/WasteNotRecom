@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
 //import Navigation from '../../components/common/navigation/Navigation';
 
-const ForgotPasswordScreen = ({ navigation }) => {
+const ResetPassword = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>

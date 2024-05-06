@@ -36,7 +36,7 @@ const Login = () => {
     const get_user = async (filter) => {
 
         // Signed in 
-        var userdata = await FBApp.db.get(COLLECTIONS.user, filter);
+        var userdata = await FBApp.db.get(COLLECTIONS.user, filter);console.log(userdata, filter);
 
         // There is user
         if (userdata) {
@@ -144,7 +144,9 @@ const Login = () => {
                 <TouchableOpacity style={styles.loginButton} onPress={handleLoginPress}>
                     <Text style={styles.loginButtonText}>Login</Text>
                 </TouchableOpacity>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                <TouchableOpacity onPress={ () => router.replace('/auth/ForgotPassword') }>
+                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                </TouchableOpacity>
             </View>
             <View style={styles.foot}>
                 <Text style={styles.signUpText}>
