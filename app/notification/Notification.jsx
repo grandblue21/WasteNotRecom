@@ -42,7 +42,7 @@ const Notification = () => {
 
         const fetchData = () => {
 
-            const need_refills = ingredientsWQ.filter(x => x.stock < 10);
+            const need_refills = ingredientsWQ.filter(x => x.quantity_left < 10);
 
             // New boad items
             setNeedRefills([...needsRefills, ...need_refills]);
@@ -64,7 +64,7 @@ const Notification = () => {
         if (profile.adminId) {
             refetch();
         }
-    }, [profile.adminId]);
+    }, [profile.adminId]);console.log(ingredientsWQ);
 
     return (
         needsRefills.length > 0 ? 
@@ -73,11 +73,11 @@ const Notification = () => {
                     <FlatList
                         data={ needsRefills }
                         renderItem={ ({ item }) => (
-                            <TouchableOpacity style={ styles.notifWrapper }>
+                            <TouchableOpacity style={ styles.notifWrapper } onPress={ () => router.replace(`/ingredient/add-batch/${ item.id }`) }>
                                 <View style={ styles.itemImgWrapper }>
                                     <Image src={ item.imageUrl ?? 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Foppenheimerusa.com%2Fwp-content%2Fthemes%2Foppenheimer%2Fassets%2Fimages%2Fproduct-placeholder.jpg&f=1&nofb=1&ipt=66fdf705465b3aaaa8e0b1458f5450cd7d60dd360b48ed5e8679d0293ce68a01&ipo=images' } style={ styles.itemImg }/>
                                 </View>
-                                <Text style={ styles.notifText }>{ item.Item_name } only has { item.quantity_left } grams, and needs to be restocked</Text>
+                                <Text style={ styles.notifText }>{ item.Item_name } only has { item.quantity_left } grams left, and needs to be restocked</Text>
                             </TouchableOpacity>
                         ) }
                         keyExtractor={(item, index) => index}

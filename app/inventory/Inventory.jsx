@@ -67,9 +67,9 @@ const Inventory = () => {
             <View style={ styles.body }>
                 <Text style={ styles.txtHeader }>Everything you need</Text>
                 <View style={ styles.contentContainer }>
+                    <Categories categories={ ['All', ...CATEGORIES] } onCategoryChange={ handleCategoryChange } />
                     {
                         inventoryItems.length > 0 ? <>
-                            <Categories categories={ ['All', ...CATEGORIES] } onCategoryChange={ handleCategoryChange } />
                             <View style={ styles.headerLabelContainer }>
                                 <Text style={ styles.headerLabel }>Status</Text>
                                 <Text style={ styles.headerLabel }>Product Name</Text>
@@ -88,7 +88,7 @@ const Inventory = () => {
                                             <View
                                                 style={ [
                                                     styles.statusIndicator,
-                                                    { backgroundColor: (item.quantity_left / item.total_quantity) * 100 >= 10 ? 'green' : (item.stock > 0 ? 'yellow' : 'red') },
+                                                    { backgroundColor: (item.quantity_left / item.total_quantity) * 100 >= 10 ? 'green' : (item.quantity_left > 0 ? 'yellow' : 'red') },
                                                 ] }
                                             />
                                             {/* Item Name and Picture */}

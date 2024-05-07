@@ -43,7 +43,7 @@ const Board = () => {
 
         const fetchData = () => {
 
-            const need_refills = ingredientsWQ.filter(x => x.stock < 10).map(x => `${x.Item_name} needs refill`);
+            const need_refills = ingredientsWQ.filter(x => x.quantity_left < 10).map(x => `${x.Item_name} needs refill`);
 
             // New boad items
             setBoardItems([...boardItems, ...need_refills]);

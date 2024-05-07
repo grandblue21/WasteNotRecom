@@ -67,9 +67,9 @@ const MarketScreen = () => {
             <Search/>
             <View style={ styles.body }>
                 <View style={ styles.contentContainer }>
+                    <Categories categories={ ['All', ...CATEGORIES] } onCategoryChange={ handleCategoryChange } />
                     {
                         marketItems.length > 0 ? <>
-                            <Categories categories={ ['All', ...CATEGORIES] } onCategoryChange={ handleCategoryChange } />
                             <FlatList
                                 showsVerticalScrollIndicator={ false }
                                 data={ marketItems }
