@@ -119,11 +119,6 @@ const MarketScreen = () => {
                                                         <MaterialIcons name="edit" size={ 18 } color="#389F4F" style={ styles.icon } />
                                                     </View>
                                                 </TouchableOpacity>
-                                                <TouchableOpacity>
-                                                    <View style={ styles.iconBackground }>
-                                                        <MaterialIcons name="restaurant" size={ 18 } color="#389F4F" style={ styles.icon } />
-                                                    </View>
-                                                </TouchableOpacity>
                                             </View>
                                             <View style={ styles.itemInfoContainer }>
                                                 <Text style={ styles.marketName }>{ item.data.Item_name }</Text>

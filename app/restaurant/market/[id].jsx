@@ -44,8 +44,8 @@ const Restaurant = () => {
                 value: saleItems.map(x => x.ItemId)
             });
 
-            setItems(saleItems.map((item) => ({ ...item, data: fetchedItems.find(x => x.ItemId, item.Item_id) })));
-            setItemsList(saleItems.map((item) => ({ ...item, data: fetchedItems.find(x => x.ItemId, item.Item_id) })));
+            setItems(saleItems.map((item) => ({ ...item, data: fetchedItems.find(x => x.ItemId == item.ItemId) })));
+            setItemsList(saleItems.map((item) => ({ ...item, data: fetchedItems.find(x => x.ItemId == item.ItemId) })));
         }
 
         // Fetch items if there are saleItems
@@ -129,7 +129,7 @@ const Restaurant = () => {
                     
                         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flexWrap: 'wrap' }}>
                         {
-                            items.map((ingredient, index) => (
+                            items.length > 0 ? items.map((ingredient, index) => (
                                 <TouchableOpacity key={ index } style={ styles.restaurantIngredient } onPress={ () => router.push(`/restaurant/ingredient-cart/${ ingredient.id }`) }>
 
                                     <Image src={ ingredient.data.image } style={ styles.ingredientImage }/>
@@ -137,7 +137,7 @@ const Restaurant = () => {
                                     <View style={ styles.ingredientInfoContainer }>
                                         <View style={ styles.ingredientNameContainer }>
                                             <Text style={ styles.ingredientName } numberOfLines={ 1 } ellipsizeMode="tail">{ ingredient.data.Item_name }</Text>
-                                            <Text style={ styles.ingredientLeft }>In store: { gramsToKg(ingredient.Quantity, 1) }kg</Text>
+                                            <Text style={ styles.ingredientLeft }>In store: { gramsToKg(isNaN(ingredient.Quantity) ? 0 : ingredient.Quantity, 1) }kg</Text>
                                         </View>
                                         <View style={ styles.ingredientPriceContainer }>
                                             <Text style={ styles.ingredientPrice }>₱{ (ingredient.Price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }</Text>
@@ -146,7 +146,7 @@ const Restaurant = () => {
                                     </View>
 
                                 </TouchableOpacity>
-                            ))
+                            )) : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ height: 200, width: 200 }} />
                         }
                         </View>
 

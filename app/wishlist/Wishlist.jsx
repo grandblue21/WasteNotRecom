@@ -79,7 +79,7 @@ const Wishlist = () => {
         const fetchData = async () => {
 
             // Restaurants
-            const rests = [...new Set(saleItems.map(x => x.Restaurant_Id))];console.log(rests);
+            const rests = [...new Set(saleItems.map(x => x.Restaurant_Id))];
 
             // Get restaurant details
             setRestaurants(await Promise.all(rests.map(async (res) => await FBApp.db.get_from_ref(COLLECTIONS.restaurants, res))));
@@ -138,22 +138,6 @@ const Wishlist = () => {
                                                 <View style={ styles.ingredientHeader }>
                                                     <Text style={ styles.ingredientName }>{ item.data.Item_name }</Text>
                                                     <View style={ styles.actionContainer }>
-                                                        <TouchableOpacity  onPress={ async () => {
-
-                                                            // Update wishlist
-                                                            await FBApp.db.update(COLLECTIONS.wishlist, { Quantity: quantity.find(x => Object.keys(x).includes(item.wishlist.id))[item.wishlist.id] }, item.wishlist.id);
-
-                                                            // Update quantity
-                                                            await FBApp.db.update(COLLECTIONS.sale_items, { Quantity: parseFloat(item.Quantity) + parseFloat(item.wishlist.Quantity) - quantity.find(x => Object.keys(x).includes(item.wishlist.id))[item.wishlist.id] }, item.id);
-                                                            
-                                                            // Show notif
-                                                            ToastAndroid.showWithGravity('Wishlist Updated', ToastAndroid.LONG, ToastAndroid.TOP);
-
-                                                            // Reload
-                                                            router.replace(`/wishlist/Wishlist`);
-                                                        } }>
-                                                            <FontAwesome name="pencil" style={ styles.editIcon } />
-                                                        </TouchableOpacity>
                                                         <TouchableOpacity onPress={ () => (
                                                             Alert.alert(
                                                                 'Remove Wishlist',
@@ -194,15 +178,6 @@ const Wishlist = () => {
                                                     </View>
                                                 </View>
                                                 <Text style={ styles.ingredientPrice }>Price: ₱ { item.Price.toLocaleString(undefined, { minimumFractionDigits: 2 }) } per Kg.</Text>
-                                                <View style={ styles.infoContainer}>
-                                                    <View style={ styles.quantityContainer }>
-                                                        <TextInput style={ styles.quantity } value={ quantity.find(x => Object.keys(x).includes(item.wishlist.id))[item.wishlist.id].toString() } onChangeText={ input => setQuantity([ ...quantity.filter(x => !Object.keys(x).includes(item.wishlist.id)), { [item.wishlist.id]: input } ]) }/>
-                                                    </View>
-                                                    <View style={ styles.infoTotalContainer }>
-                                                        <Text style={ styles.infoTotal }>/{ item.Quantity }</Text>
-                                                        <Text style={ styles.infoLeft }>kg Available</Text>
-                                                    </View>
-                                                </View>
                                             </View>
                                         </View>
                                     ))
@@ -215,11 +190,6 @@ const Wishlist = () => {
                 }
 
             </ScrollView>
-
-            <View style={ styles.totalContainer }>
-                <Text style={ styles.totalLabel }>Total:</Text>
-                <Text style={ styles.total }>₱{ (saleItems.filter(x => x).reduce((total, current) => parseFloat(current.Price) * parseFloat(wishlist.find(x => x.Sale_id == current.id).Quantity) + total, 0)).toLocaleString(undefined, { minimumFractionDigits: 2 }) }</Text>
-            </View>
 
         </SafeAreaView>
     )

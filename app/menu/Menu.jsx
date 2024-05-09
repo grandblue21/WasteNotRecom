@@ -23,6 +23,9 @@ const Menu = () => {
             (category != 'All' && x.category == category) || category == 'All'
         )));
     };
+    const handleCookPress = (menu) => {
+        
+    }
 
     useEffect(() => {
         
