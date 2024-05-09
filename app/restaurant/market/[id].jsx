@@ -228,7 +228,8 @@ const styles = StyleSheet.create({
         color: '#928D8D'
     },
     ingredientPriceContainer: {
-        paddingLeft: 15
+        paddingLeft: 15,
+        flexDirection: 'row'
     },
     ingredientPrice: {
         fontSize: 15,
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
         color: COLORS.primary
     },
     ingredientPricePer: {
-
+        marginLeft: 5
     }
 });
 
