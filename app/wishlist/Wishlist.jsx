@@ -120,7 +120,7 @@ const Wishlist = () => {
             <ScrollView style={ styles.body }>
                 
                 {
-                    restaurantsFormatted.map((restaurant, index) => (
+                    restaurantsFormatted.length > 0 ? restaurantsFormatted.map((restaurant, index) => (
                         <View style={ styles.restaurant } key={index}>
 
                             <View style={ styles.restaurantContainer }>
@@ -186,7 +186,7 @@ const Wishlist = () => {
                             </ScrollView>
 
                         </View>
-                    ))
+                    )) : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ height: 250, width: 150 , borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} />
                 }
 
             </ScrollView>

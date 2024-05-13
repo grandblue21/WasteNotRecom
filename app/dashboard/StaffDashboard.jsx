@@ -9,7 +9,6 @@ import Inventory from '../../components/home/inventory/Inventory';
 import Navigation from '../../components/common/navigation/Navigation';
 import SaleItems from '../../components/home/sale-items/SaleItems';
 import { useRouter } from 'expo-router';
-import FirebaseApp from '../../helpers/FirebaseApp';
 
 const StaffDashboard = () => {
 

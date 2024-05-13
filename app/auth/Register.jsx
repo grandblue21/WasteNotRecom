@@ -13,7 +13,6 @@ const Register = () => {
     const router = useRouter();
 
     // Set Variables
-    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -47,7 +46,6 @@ const Register = () => {
             FBApp.db.insert(COLLECTIONS.user, {
                 role: ROLES.customer,
                 userId: userCredential.user.uid,
-                username: username,
                 firstName: firstName,
                 lastName: lastName,
                 address: address,
@@ -85,7 +83,6 @@ const Register = () => {
                 <Text style={styles.headerText}>Sign Up</Text>
 
                 {/* Fields */}
-                <InputIcon icon={'user'} placeholder={'Username'} value={username} setValue={setUsername} />
                 <InputIcon icon={'user'} placeholder={'First Name'} value={firstName} setValue={setFirstName} />
                 <InputIcon icon={'user'} placeholder={'Last Name'} value={lastName} setValue={setLastName} />
                 <InputIcon icon={'map-pin'} placeholder={'Address'} value={address} setValue={setAddress} />

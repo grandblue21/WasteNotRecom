@@ -4,8 +4,10 @@ import { FontAwesome } from '@expo/vector-icons';
 
 const Search = () => {
 
+    const show = false;
+
     return (
-        <View style={styles.inputIconWrapper}>
+        show && <View style={styles.inputIconWrapper}>
             <TouchableOpacity>
                 <FontAwesome name={'search'} style={styles.inputIcon}/>
             </TouchableOpacity>
