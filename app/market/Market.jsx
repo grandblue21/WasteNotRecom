@@ -48,8 +48,8 @@ const Market = () => {
                     <Text style={ styles.headerText }>Restaurants</Text>
 
                     {
-                        restaurants.filter((x) => saleItems.map((y) => y.Restaurant_Id).includes(x.id)).length > 0 ? restaurants.filter((x) => saleItems.map((y) => y.Restaurant_Id).includes(x.id)).map((restaurant, index) => (
-                            <TouchableOpacity key={ index } style={ styles.restaurant } onPress={ () => router.replace(`/restaurant/market/${restaurant.id}`) }>
+                        restaurants.length > 0 ? restaurants.map((restaurant, index) => (
+                            <TouchableOpacity key={ index } style={ styles.restaurant } onPress={ () => router.replace(`/restaurant/menu/${restaurant.id}`) }>
 
                                 <Image src={ restaurant.restaurantLogo ?? images.RESTAURANT_LOGO_PLACEHOLDER_IMG } style={ styles.restaurantImage }/>
 

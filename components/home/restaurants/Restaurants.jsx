@@ -25,7 +25,7 @@ const Restaurants = () => {
                         <FlatList
                             data={ restaurants }
                             renderItem={({ item }) => (
-                                <TouchableOpacity onPress={ () => router.replace(`/restaurant/market/${item.id}`) }>
+                                <TouchableOpacity onPress={ () => router.replace(`/restaurant/menu/${item.id}`) }>
                                     <Image src={ item.restaurantLogo ?? images.RESTAURANT_LOGO_PLACEHOLDER_IMG } style={styles.restaurant} />
                                 </TouchableOpacity>
                             )}
