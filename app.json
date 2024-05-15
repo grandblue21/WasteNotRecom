@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "wastenot",
+    "name": "WasteNot",
     "slug": "wastenot",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/wastenotpg.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -21,7 +21,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.deanadrianef.wastenot"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,7 +36,14 @@
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
-      ]
-    ]
+      ],
+      "expo-font",
+      "expo-router"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "caf5c707-6fa3-45e1-aaf3-00e7dc8d18c2"
+      }
+    }
   }
 }

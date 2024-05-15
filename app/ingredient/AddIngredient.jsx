@@ -16,7 +16,7 @@ const AddIngredient = () => {
   const [scanned, setScanned] = useState(false);
 
   const getCameraPermissions = async () => {
-    const { status } = await Camera.requestPermissionsAsync();
+    const { status } = await Camera.requestCameraPermissionsAsync();
     setHasPermission(status === 'granted');
   };
 
