@@ -4,7 +4,7 @@ import { COLLECTIONS } from '../constants';
 
 const getRecommendation = (filter = null) => {
 
-    const [recommendation, setRecommendation] = useState({});
+    const [recommendation, setRecommendation] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -16,7 +16,7 @@ const getRecommendation = (filter = null) => {
             // Set FireBase App Instance
             const FBApp = new FirebaseApp();
 
-            const data = await FBApp.db.get(COLLECTIONS.recommendation, filter);
+            const data = await FBApp.db.gets(COLLECTIONS.recommendation, filter);
 
             setRecommendation(data ?? {});
 
