@@ -59,7 +59,7 @@ const MarketScreen = () => {
         if (profile.adminId) {
             refetch();
         }
-    }, [profile.adminId]); 
+    }, [profile.adminId]);console.log(marketItems);
 
     return (
         <View style={ styles.container }>
@@ -119,6 +119,42 @@ const MarketScreen = () => {
                                                         <MaterialIcons name="edit" size={ 18 } color="#389F4F" style={ styles.icon } />
                                                     </View>
                                                 </TouchableOpacity>
+                                                {
+                                                    item.Quantity > 0 && <TouchableOpacity onPress={ () => (
+                                                        Alert.alert(
+                                                            'Mark as Sold',
+                                                            'This sale item will not be for sale anymore.',
+                                                            [
+                                                                {
+                                                                    text: 'Cancel',
+                                                                    style: 'cancel',
+                                                                },
+                                                                {
+                                                                    text: 'sold',
+                                                                    onPress: async () => {
+                                                                        try {
+                                                                            await FBApp.db.update(COLLECTIONS.sale_items, { Quantity: 0 } ,item.id);
+
+                                                                            // Show notif
+                                                                            ToastAndroid.showWithGravity('Market Item Sold', ToastAndroid.LONG, ToastAndroid.TOP);
+
+                                                                            // Reload
+                                                                            router.replace('/market/StaffMarket');
+                                                                        }
+                                                                        catch (error) {
+                                                                            console.log(error);
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ],
+                                                            { cancelable: false }
+                                                        )
+                                                    ) }>
+                                                        <View style={ styles.iconBackground }>
+                                                            <MaterialIcons name="shopping-cart" size={ 18 } color="#389F4F" style={ styles.icon } />
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                }
                                             </View>
                                             <View style={ styles.itemInfoContainer }>
                                                 <Text style={ styles.marketName }>{ item.data.Item_name }</Text>
@@ -177,8 +213,9 @@ const styles = StyleSheet.create({
     },
     iconContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         position: 'absolute',
+        gap: 5,
         top: 0,
         left: 0,
         right: 0,

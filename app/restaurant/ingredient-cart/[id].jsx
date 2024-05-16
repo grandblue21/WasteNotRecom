@@ -14,7 +14,7 @@ const IngredientCart = () => {
     const FBApp = new FirebaseApp();
     const { profile } = getProfile();
     const [saleItem, setSaleItem] = useState({});
-    const [quantity, setQuantity] = useState('');
+    const [wishlist, setWishlist] = useState([]);
     const handleConfirm = async () => {
 
         Keyboard.dismiss();
@@ -22,7 +22,6 @@ const IngredientCart = () => {
         // Add to wishlist
         const result = await FBApp.db.insert(COLLECTIONS.wishlist, {
             Sale_id: id,
-            Total: parseFloat(saleItem.Price) * parseFloat(quantity),
             User_id: profile.userId
         });
 
@@ -34,15 +33,31 @@ const IngredientCart = () => {
             return false;
         }
 
-        // Update quantity
-        await FBApp.db.update(COLLECTIONS.sale_items, { Quantity: parseInt(saleItem.Quantity) - parseInt(quantity) }, id);
-
         // Show notif
         ToastAndroid.showWithGravity('Added to wishlist', ToastAndroid.LONG, ToastAndroid.TOP);
 
         // Redirect to ingredients
         router.replace('/wishlist/Wishlist');
     }
+
+    // Useeffect for Wishist
+    useEffect(() => {
+
+        const fetchData = async () => {
+
+            // Get wishlist
+            setWishlist(await FBApp.db.gets(COLLECTIONS.wishlist, {
+                column: 'User_id',
+                comparison: '==',
+                value: profile.userId
+            }));
+        }
+
+        // Profile is loaded
+        if (profile.id) {
+            fetchData();
+        }
+    }, [profile]);
 
     // Get sale item
     useEffect(() => {
@@ -105,8 +120,8 @@ const IngredientCart = () => {
                     <TouchableOpacity style={ styles.cancelButton } onPress={ () => router.back() }>
                         <Text style={ styles.buttonText }>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={ styles.confirmButton } onPress={ handleConfirm }>
-                        <Text style={ styles.buttonText }>TO Wishlist</Text>
+                    <TouchableOpacity style={ styles.confirmButton } onPress={ handleConfirm } disabled={ wishlist.find((x) => x.Sale_id == id) ? true : false }>
+                        <Text style={ styles.buttonText }>{ wishlist.find((x) => x.Sale_id == id) ? 'Already in Wishlist' : 'TO Wishlist' }</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -183,7 +198,8 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 25,
         color: 'white',
-        fontWeight: '500'
+        fontWeight: '500',
+        textAlign: 'center'
     }
 });
 

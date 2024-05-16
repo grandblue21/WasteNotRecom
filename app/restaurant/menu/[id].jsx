@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Header from '../../../components/common/header/Header';
-import { FONT, COLORS, SIZES, COLLECTIONS, CATEGORIES, images } from '../../../constants';
+import { FONT, COLORS, SIZES, COLLECTIONS, MENU_CATEGORIES, images } from '../../../constants';
 import Navigation from '../../../components/common/navigation/Navigation';
 import { useRouter } from 'expo-router';
 import Categories from '../../../components/common/navigation/Categories';
@@ -23,7 +23,7 @@ const RestaurantMenu = () => {
     const [menuList, setMenuList] = useState(menu);
     const handleCategoryChange = (index, category) => {
         setSelectedCategory(category);
-        setMenuList(menu.filter((x) => (console.log(x.dishCategory) ||
+        setMenuList(menu.filter((x) => (
             (category != 'All' && x.dishCategory.toLowerCase() == category.toLowerCase()) || category == 'All'
         )));
     };
@@ -75,7 +75,7 @@ const RestaurantMenu = () => {
     return (
         <SafeAreaView style={ styles.container }>
 
-            <Header title={ 'Market' } showBack={{ show: true, handleBack: () => router.replace('/market/Market') }}/>
+            <Header title={ 'Menu' } showBack={{ show: true, handleBack: () => router.replace('/restaurant/RestaurantMarket') }}/>
 
             <View style={ styles.body }>
 
@@ -102,13 +102,9 @@ const RestaurantMenu = () => {
                     <Text style={ styles.restaurantName } numberOfLines={ 2 } ellipsizeMode="tail">{ restaurant.restaurantName }</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={ styles.restaurantContainer } onPress={ () => router.replace('/restaurant/RestaurantDetails') }>
-                    
-                </TouchableOpacity>
-
                 <View style={{ flex: 1 }}>
                     <View style={ {marginBottom: 10 }}>
-                        <Categories categories={ ['All', ...CATEGORIES] } onCategoryChange={ handleCategoryChange } />
+                        <Categories categories={ ['All', ...MENU_CATEGORIES] } onCategoryChange={ handleCategoryChange } />
                     </View>
 
                     <ScrollView style={ styles.restaurantIngredientsContainer }>
@@ -116,7 +112,7 @@ const RestaurantMenu = () => {
                         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flexWrap: 'wrap' }}>
                         {
                             menuList.length > 0 ? menuList.map((ingredient, index) => (
-                                <TouchableOpacity key={ index } style={ styles.restaurantIngredient } onPress={ () => router.push(`/restaurant/ingredient-cart/${ ingredient.id }`) }>
+                                <TouchableOpacity key={ index } style={ styles.restaurantIngredient }>
 
                                     <Image src={ ingredient.imageUrl } style={ styles.ingredientImage }/>
 

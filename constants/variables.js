@@ -33,13 +33,13 @@ const CATEGORIES = [
 
 const MENU_CATEGORIES = [
     'Main Dish',
-     'Appetizer',
-     'Breakfast Food',
-     'Dessert',
-     'Restaurant Specials',
-     'Kiddy Meals',
-     'Drinks and Beverages',
-     'Salads'
+    'Appetizer',
+    'Breakfast Food',
+    'Dessert',
+    'Restaurant Specials',
+    'Kiddy Meals',
+    'Drinks and Beverages',
+    'Salads'
 ]
 
 const INGREDIENT_CLASSIFICATIONS = [
@@ -77,7 +77,7 @@ const INGREDIENT_CLASSIFICATIONS = [
     }
 ]
 
-const SPOONACULAR_API_KEY = '683b6537189c442a80fcb771e5dfea05';
+const SPOONACULAR_API_KEY = '90b1f90baf2342999d50c25df448d02f';
 const GOOGLE_MAP_API_KEY = 'AIzaSyBINKACTJD2RU_j309GL6J2a6RLjs97flw';
 const GOOGLE_MAP_CONFIG = {
     allow: false,

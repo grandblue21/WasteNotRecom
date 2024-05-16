@@ -177,7 +177,8 @@ const Wishlist = () => {
                                                         </TouchableOpacity>
                                                     </View>
                                                 </View>
-                                                <Text style={ styles.ingredientPrice }>Price: ₱ { item.Price.toLocaleString(undefined, { minimumFractionDigits: 2 }) } per Kg.</Text>
+                                                <Text style={ styles.ingredientPrice }>Price: ₱ { item.Price.toLocaleString(undefined, { minimumFractionDigits: 2 }) } per kg.</Text>
+                                                { item.Quantity == 0 && <Text style={ styles.ingredientSold }>Sold</Text> }
                                             </View>
                                         </View>
                                     ))
@@ -202,8 +203,7 @@ const styles = StyleSheet.create({
     },
     body: {
         flex: 1,
-        paddingHorizontal: 5,
-        marginBottom: 80
+        paddingHorizontal: 5
     },
     restaurant: {
         marginBottom: 10,
@@ -272,6 +272,12 @@ const styles = StyleSheet.create({
     ingredientPrice: {
         fontSize: 20,
         fontWeight: 'bold'
+    },
+    ingredientSold: {
+        color: COLORS.primary,
+        fontSize: 22,
+        fontWeight: '900',
+        textTransform: 'uppercase'
     },
     infoContainer: {
         flex: 1,

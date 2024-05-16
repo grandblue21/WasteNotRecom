@@ -14,7 +14,7 @@ const Inventory = () => {
 
     useEffect(() => {
         // Refetch if profile is loaded
-        if (profile.adminId) {
+        if (!isLoading && profile.adminId) {
             refetch();
         }
     }, [profile.adminId]);

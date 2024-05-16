@@ -90,7 +90,7 @@ const Profile = () => {
 
                     <View style={ styles.infoItem }>
                         <Text style={ styles.infoLabel }>Gmail:</Text>
-                        <Text style={ styles.infoText }>{ profile.email }</Text>
+                        <Text style={ styles.infoText }>{ profile.email ?? 'None' }</Text>
                     </View>
 
                     <View style={ styles.infoItem }>

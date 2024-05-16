@@ -11,20 +11,19 @@ const TopDishes = () => {
     const router = useRouter();
     const { profile } = getProfile();
     const { menu, isLoading: isLM, refetch } = getMenu({ column: 'userId', comparison: '==', value: profile.adminId});
-    const [menuList, setMenuList] = useState([]);
 
     useEffect(() => {
         
         const fetchData = () => {
-            setMenuList(menu)
+            refetch();
         }
 
         // Get menu if profile is loaded
-        if (!profile.isLoading && !menu.isLoading) {
+        if (!profile.isLoading && profile.adminId && !isLM) {
             fetchData();
         }
 
-    }, [profile, menu]);
+    }, [profile]);
 
     return (
         <View style={styles.container}>
@@ -38,8 +37,8 @@ const TopDishes = () => {
 
             <View style={styles.dishContainer}>
                 {
-                    menuList.length > 0 ? <FlatList
-                        data={ menuList }
+                    menu.length > 0 ? <FlatList
+                        data={ menu }
                         renderItem={({ item }) => (
                             <TouchableOpacity onPress={ () => router.replace(`/menu/menu-dish/${ item.id }`) }>
                                 <Image src={ item.imageUrl ?? 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F282%2F282465.png&f=1&nofb=1&ipt=882638a8b113a96b2f827e92de88e9728c11378025d1842bb22cea7e21f37d9c&ipo=images' } style={styles.dish} />

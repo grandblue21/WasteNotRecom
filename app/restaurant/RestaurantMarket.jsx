@@ -9,7 +9,7 @@ import getRestaurants from '../../hook/getRestaurants';
 import { useEffect, useState } from 'react';
 import FirebaseApp from '../../helpers/FirebaseApp';
 
-const Market = () => {
+const RestaurantMarket = () => {
 
     const router = useRouter();
     const FBApp = new FirebaseApp();
@@ -37,7 +37,7 @@ const Market = () => {
     return (
         <SafeAreaView style={ styles.container }>
 
-            <Header title={ 'Market' }/>
+            <Header title={ 'Menu' }/>
 
             <View style={ styles.body }>
 
@@ -49,7 +49,7 @@ const Market = () => {
 
                     {
                         restaurants.length > 0 ? restaurants.map((restaurant, index) => (
-                            <TouchableOpacity key={ index } style={ styles.restaurant } onPress={ () => router.replace(`/restaurant/market/${restaurant.id}`) }>
+                            <TouchableOpacity key={ index } style={ styles.restaurant } onPress={ () => router.replace(`/restaurant/menu/${restaurant.id}`) }>
 
                                 <Image src={ restaurant.restaurantLogo ?? images.RESTAURANT_LOGO_PLACEHOLDER_IMG } style={ styles.restaurantImage }/>
 
@@ -138,4 +138,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default Market;
+export default RestaurantMarket;
