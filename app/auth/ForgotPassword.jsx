@@ -47,6 +47,14 @@ const ForgotPassword = () => {
                   <Text style={styles.buttonText}>Reset Password</Text>
               </TouchableOpacity>
           </View>
+          <View style={styles.foot}>
+              <Text style={styles.signUpText}>
+                  You remembered?{' '}
+                  <Text style={styles.signUpLink} onPress={() => router.replace('/auth/Login')}>
+                      Login
+                  </Text>
+              </Text>
+          </View>
       </View>
     );
 };
@@ -118,6 +126,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 19,
     textAlign: 'center', // Align button text to the center
+  },
+  foot: {
+      marginBottom: 70,
   },
 });
 
