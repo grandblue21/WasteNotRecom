@@ -7,7 +7,7 @@
     "icon": "./assets/wastenotpg.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/wastenotpg.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
