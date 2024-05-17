@@ -61,7 +61,7 @@ const AddBatch = () => {
 
             // Update quantity
             await FBApp.db.update(COLLECTIONS.ingredients, {
-                quantity_left: ingredient.quantity_left + quantity,
+                quantity_left: parseInt(ingredient.quantity_left) + parseInt(quantity),
                 total_quantity: history.reduce((total, current) => total + parseInt(current.item_quantity), parseInt(quantity))
             }, ingredient.id);
 

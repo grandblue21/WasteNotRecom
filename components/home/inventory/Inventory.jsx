@@ -13,11 +13,12 @@ const Inventory = () => {
     const { ingredients, refetch } = getIngredients({ column: 'Restaurant_id', comparison: '==', value: profile.adminId });
 
     useEffect(() => {
+
         // Refetch if profile is loaded
-        if (!isLoading && profile.adminId) {
+        if (profile.adminId) {
             refetch();
         }
-    }, [profile.adminId]);
+    }, [profile]);
 
     return (
         <>
