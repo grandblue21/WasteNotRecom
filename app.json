@@ -4,10 +4,10 @@
     "slug": "wastenot",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/wastenotpg.png",
+    "icon": "./assets/wastenotpicon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/wastenotpg.png",
+      "image": "./assets/wastenotpicon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -39,6 +39,14 @@
       ],
       "expo-font",
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "caf5c707-6fa3-45e1-aaf3-00e7dc8d18c2"
+      }
+    }
   }
 }
