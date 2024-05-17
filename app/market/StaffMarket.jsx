@@ -201,7 +201,10 @@ const styles = StyleSheet.create({
     marketItemContainer: {
         backgroundColor: '#fff',
         borderRadius: 10,
-        padding: 10,
+        paddingBottom:10,
+        paddingRight: 10,
+        padding: 15,
+        maxHeight: 'auto',
         elevation: 5,
         shadowColor: '#000',
         shadowOpacity: 0.2,
@@ -241,8 +244,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     marketName: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
+        flexShrink: 1,
+        overflow: 'hidden',
+        includeFontPadding: false,
+        maxWidth: '60%'
     },
     marketStock: {
         paddingLeft:10,
