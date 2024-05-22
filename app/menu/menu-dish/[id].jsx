@@ -6,14 +6,27 @@ import Header from '../../../components/common/header/Header';
 import FirebaseApp from '../../../helpers/FirebaseApp';
 import { useRouter } from 'expo-router';
 import getProfile from '../../../hook/getProfile';
+import getIngredients from '../../../hook/getIngredients';
 
 const MenuDish = () => {
 
     const router = useRouter();
     const { id } = useGlobalSearchParams();
     const FBApp = new FirebaseApp();
-    const { profile } = getProfile();
+    const { profile, isLoading } = getProfile();
     const [menu, setMenu] = useState({});
+    const { ingredients, isLoading: isLI, refetch } = getIngredients({ column: 'Restaurant_id', comparison: '==', value: profile.adminId });
+
+    useEffect(() => {
+
+        const get_ing = () => {
+            refetch();
+        }
+        
+        if (!isLoading && profile.adminId) {
+            get_ing();
+        }
+    }, [profile, isLoading]);
 
     // Get menu
     const get_menu = async () => {
@@ -25,31 +38,18 @@ const MenuDish = () => {
 
         try {
 
-            // Get matching ingredients
-            const matches = await FBApp.db.gets(COLLECTIONS.ingredients, { comparison: 'in', column: 'Item_name', value: menu.ingredientsList.map(i => i.ingredients) });
-
-            // Ingredients in store
-            const in_stock = matches.filter(x => x.Restaurant_id == profile.adminId);
-
-            // Check if there is in stock
-            if (in_stock.length == 0) {
-                throw 'Lacking ingredients to cook menu';
-            }
-
-            // Ingredients
-            const ingredients = await FBApp.db.gets(COLLECTIONS.ingredients, {
-                column: 'ItemId',
-                comparison: 'in',
-                value: in_stock.map(x => x.ItemId)
-            });
-
             // Iterate
-            ingredients.map((ingredient) => {
-                const match = menu.ingredientsList.find(x => x.ingredients == ingredient.Item_name);
+            menu.ingredientsList.map((ing) => {
+                const match = ingredients.find(x => ing.ingredients.toLowerCase() == x.Item_name.toLowerCase());
+
+                // Check if there is a match
+                if (!match) {
+                    throw `${ ing.ingredients } is not in the inventory`;
+                }
 
                 // Check if ther eis enough
-                if (!ingredient.total_quantity || parseFloat(ingredient.total_quantity) < parseFloat(match.grams)) {
-                    throw `Stock for ${ ingredient.Item_name } is not enough`;
+                if (!match.quantity_left || parseFloat(match.quantity_left) < parseFloat(ing.grams)) {
+                    throw `Stock for ${ match.Item_name } is not enough`;
                 }
             });
 
@@ -58,7 +58,7 @@ const MenuDish = () => {
                 const match = menu.ingredientsList.find(x => x.ingredients == ingredient.Item_name);
 
                 // Update
-                await FBApp.db.update(COLLECTIONS.ingredients, { total_quantity: parseFloat(ingredient.total_quantity) - parseFloat(match.grams) }, ingredient.id);
+                await FBApp.db.update(COLLECTIONS.ingredients, { quantity_left: parseFloat(ingredient.quantity_left) - parseFloat(match.grams) }, ingredient.id);
             });
 
             // Show message

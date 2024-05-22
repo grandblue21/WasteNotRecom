@@ -9,11 +9,13 @@ import { COLLECTIONS, COLORS, SIZES, INGREDIENT_CLASSIFICATIONS, SPOONACULAR_API
 import FirebaseApp from '../../helpers/FirebaseApp';
 import getRecommendation from '../../hook/getRecommendation';
 import moment from 'moment';
+import getMenu from '../../hook/getMenu';
 
 const Recommendation = () => {
 
     const FBApp = new FirebaseApp();
     const { profile, isLoading } = getProfile();
+    const { menu, refetch: refetchMenu } = getMenu({ column: 'userId', comparison: '==', value: profile.adminId });
     const { ingredients, isLoading: isLI, refetch } =  getIngredients({ column: 'Restaurant_id', comparison: '==', value: profile.adminId });
     const recommendation = getRecommendation({ column: 'Restaurant_id', comparison: '==', value: profile.adminId });
     const [recommendations, setRecommendations] = useState('');
@@ -26,18 +28,12 @@ const Recommendation = () => {
 
     useEffect(() => {
         // Refetch if profile is loaded
-        if (profile.adminId) {
+        if (!isLoading && profile.adminId) {
+            refetchMenu();
             recommendation.refetch();
             refetch();
         }
-    }, [profile.adminId]);
-
-    useEffect(() => {
-        if (!isLoading) {
-            recommendation.refetch();
-            refetch();
-        }
-    }, [isLoading]);
+    }, [profile, isLoading]);
 
     useEffect(() => {
 
@@ -50,24 +46,13 @@ const Recommendation = () => {
                 setCancelTokenSource(source);
 
                 // In stock
-                const in_stock = ingredients.filter((x) => parseInt(x.quantity_left) > 0);
+                let in_stock = ingredients.filter((x) => parseInt(x.quantity_left) > 0);
 
-                // Required count
-                let required_count = 0;
-
-                // Count reuqired ingredients
-                in_stock.map((x) => {
-                    x.classifications.map((y) => {
-                        const z = INGREDIENT_CLASSIFICATIONS.find(x => x.name == y);
-
-                        if (z.required) {
-                            required_count++;
-                        }
-                    });
-                });
+                // Filter required
+                in_stock = in_stock.filter((x) => menu.map((y) => y.ingredientsList.map((z) => z.ingredients.toLowerCase()).includes(x.Item_name.toLowerCase())).length > 0);
 
                 // Check if there are required ingredients in stock
-                if (required_count == 0) {
+                if (in_stock.length == 0) {
 
                     setRecommendations('Apparently, you currently have no ingredients in stock that can be considered as a main or base ingredient to create a dish.');
 
@@ -75,55 +60,10 @@ const Recommendation = () => {
                 }
 
                 /*
-                 * Chatgpt
-                 */
-
-                // const options = {
-                //     method: 'POST',
-                //     url: 'https://chatgpt53.p.rapidapi.com/',
-                //     headers: {
-                //     'content-type': 'application/json',
-                //     'X-RapidAPI-Key': 'afab6284a5mshae6dd43c22e53a1p14328bjsn3e3a0c4e172d',
-                //     'X-RapidAPI-Host': 'chatgpt53.p.rapidapi.com'
-                //     },
-                //     data: {
-                //         messages: [
-                //             {
-                //                 role: 'user',
-                //                 content: `
-                //                     As a Chef, write three Asian or Filipino recipes strictly, remember strictly using only the ingredients mentioned and please do not add ingredient not specified below:
-                //                     ` + (in_stock.map(x => (`- ${ x.Item_name }, can be used as ${ (x.classifications.join(', ')) }`)).join('\n')) + `
-                //                     . Reply including raw minified array json in the end with format: [{name: 'string', ingredients: 'array', instructions: 'array'}] after a phrase capitalized "HERE IS YOUR JSON FORMAT:"
-                //                 `.trim()
-                //             }
-                //         ],
-                //         temperature: 1
-                //     }
-                // };
-
-                // // Get response
-                // const response = await axios.request(options);
-
-                // // Retreive json
-                // const json_string = getContentBetweenBrackets(response.data.choices[0].message.content);
-
-                // // Minify and convert
-                // const converted_json = JSON.parse(cleanString(json_string));
-
-                // // Set recommendation
-                // setRecommendations('Possible recipes:');
-                // setRecipes(converted_json ? converted_json : []);
-
-
-
-                // Get existing
-                
-                /*
                  * Spoonacular
                  */
-                let response;
                 try {
-                    response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${in_stock.map(x => x.Item_name.toLowerCase()).join(',')}&number=3&limitLicense=false&ignorePantry=false&apiKey=${SPOONACULAR_API_KEY}`, {
+                    const response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${in_stock.map(x => x.Item_name.toLowerCase()).join(',')}&number=10&limitLicense=false&ignorePantry=false&apiKey=${SPOONACULAR_API_KEY}`, {
                         cancelToken: source.token
                     });
                     setRecommendations('Possible recipes:');
@@ -166,8 +106,14 @@ const Recommendation = () => {
         // Get recommendation
         if (!recommendation.isLoading) {
 
+            // In stock
+            let in_stock = ingredients.filter((x) => parseInt(x.quantity_left) > 0);
+
+            // Filter required
+            in_stock = in_stock.filter((x) => menu.map((y) => y.ingredientsList.map((z) => z.ingredients.toLowerCase()).includes(x.Item_name.toLowerCase())).length > 0);
+
             // Check matches
-            const match = recommendation.recommendation.find((x) => JSON.stringify(x.ingredients.sort()) == JSON.stringify(ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId).sort()));
+            const match = recommendation.recommendation.find((x) => JSON.stringify(x.ingredients.sort()) == JSON.stringify(in_stock.map((x) => x.Item_name).sort()));
 
             // There are recipes and recipes in inventory matches the ingredients for the recipe, if not get new set of recipes
             if (match) {
@@ -185,27 +131,15 @@ const Recommendation = () => {
         const update = async () => {
 
             // There is recipe
-            if (recipes.length > 0) {
+            if (recipes.length > 0 && !recFromDb) {
 
-                // Update recommendation
-                const existing = await FBApp.db.gets(COLLECTIONS.recommendation, { column: 'Restaurant_id', comparison: '==', value: profile.adminId });
-
-                // Update if existing
-                if (existing) {
-                    FBApp.db.update(COLLECTIONS.recommendation, {
-                        ingredients: ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId),
-                        recipes: recipes,
-                        date: moment().format('YYYY-MM-DD HH:mm:ss')
-                    }, existing.id);
-                }
-                // Save
-                else {
-                    FBApp.db.insert(COLLECTIONS.recommendation, {
-                        Restaurant_id: profile.adminId,
-                        ingredients: ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.ItemId),
-                        recipes: recipes
-                    });
-                }
+                // Include recipes
+                FBApp.db.insert(COLLECTIONS.recommendation, {
+                    Restaurant_id: profile.adminId,
+                    ingredients: ingredients.filter((x) => parseInt(x.quantity_left) > 0).map((x) => x.Item_name),
+                    recipes: recipes,
+                    date: moment().format('YYYY-MM-DD HH:mm:ss')
+                });
 
             }
         }
@@ -225,7 +159,14 @@ const Recommendation = () => {
                         {
                             recommendation.recommendation.sort((a, b) => moment(a.date ?? moment().format('YYYY-MM-DD HH:mm:ss')) > moment(b.date ?? moment().format('YYYY-MM-DD HH:mm:ss'))).map((rec) => (
                                 <View>
-                                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{ moment(rec?.date).format('MMMM DD, YYYY') }</Text>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{ moment(rec?.date).format('MMMM DD, YYYY - h:mm A') }</Text>
+                                        {/* <TouchableOpacity onPress={ () => {
+                                            setRecipes(rec.recipes); setShowPrevious(!showPrevious);
+                                        } }>
+                                            <Text style={{ color: COLORS.primary, fontWeight: 'bold' }}>Show</Text>
+                                        </TouchableOpacity> */}
+                                    </View>
                                     {
                                         rec.recipes.map((x, i) => (
                                             <Text>{ i + 1 }.  {x.title}</Text>
@@ -282,9 +223,16 @@ const Recommendation = () => {
                                     </View>
                                     <View style={ styles.ingredientContainer }>
                                         <Text style={ styles.ingredientLabel }>Ingredients: </Text>
+                                        <Text style={{ ...styles.ingredient, fontWeight: '900' }}> In store</Text>
                                         {
-                                            [...recipe.missedIngredients, ...recipe.usedIngredients].map((ingredient, i) => (
+                                            recipe.usedIngredients.map((ingredient, i) => (
                                                 <Text key={i} style={ styles.ingredient }> - { capitalizeText(ingredient.name) }</Text>
+                                            ))
+                                        }
+                                        <Text style={{ ...styles.ingredient, color: 'red', fontWeight: '900' }}> Missing</Text>
+                                        {
+                                            recipe.missedIngredients.map((ingredient, i) => (
+                                                <Text key={i} style={{ ...styles.ingredient, color: 'red' }}> - { capitalizeText(ingredient.name) }</Text>
                                             ))
                                         }
                                     </View>
