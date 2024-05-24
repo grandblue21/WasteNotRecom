@@ -8,10 +8,45 @@ import Categories from '../../components/common/navigation/Categories';
 import Navigation from '../../components/common/navigation/Navigation';
 import getIngredients from '../../hook/getIngredients';
 import getProfile from '../../hook/getProfile';
-import { images, CATEGORIES, COLLECTIONS } from '../../constants';
+import { images, CATEGORIES, COLLECTIONS, SIZES, COLORS } from '../../constants';
 import FirebaseApp from '../../helpers/FirebaseApp';
-import { gramsToKg } from '../../helpers/Converter';
 import { FontAwesome } from '@expo/vector-icons';
+import { Menu, Provider } from 'react-native-paper';
+
+const CustomDropdown = () => {
+
+    const router = useRouter();
+    const [visible, setVisible] = useState(false);
+    const openMenu = () => setVisible(true);
+    const closeMenu = () => setVisible(false);
+    const handleMenuItemPress = async (item) => {
+
+        switch (item) {
+            case 'manual': router.replace('/ingredient/add-from-scan/manual_scan'); break;
+            case 'add_scan': router.replace('/ingredient/AddIngredient'); break;
+        }
+
+        closeMenu();
+    };
+
+    return (
+        <Provider>
+            <Menu
+                visible={ visible }
+                onDismiss={ closeMenu }
+                statusBarHeight="100"
+                anchor={(
+                    <TouchableOpacity onPress={ openMenu } style={{ paddingTop: 16 }}>
+                        <AntDesign name="pluscircle" size={ 36 } color="#389F4F" />
+                    </TouchableOpacity>
+                )}
+            >
+                <Menu.Item onPress={ () => handleMenuItemPress('add_scan') } title="Scan" style={{ backgroundColor: '#FFF' }} titleStyle={{ fontWeight: 'bold', color: COLORS.primary }}/>
+                <Menu.Item onPress={ () => handleMenuItemPress('manual') } title="Manual" style={{ backgroundColor: '#FFF' }} titleStyle={{ fontWeight: 'bold', color: COLORS.primary }}/>
+            </Menu>
+        </Provider>
+    );
+};
 
 const Inventory = () => {
 
@@ -65,7 +100,12 @@ const Inventory = () => {
             <Header title="Inventory"/>
             <Search/>
             <View style={ styles.body }>
-                <Text style={ styles.txtHeader }>Everything you need</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                    <View style={{ marginLeft: SIZES.medium, zIndex: 2}}>
+                        <CustomDropdown/>
+                    </View>
+                    <Text style={ styles.txtHeader }>Everything you need</Text>
+                </View>
                 <View style={ styles.contentContainer }>
                     <Categories categories={ ['All', ...CATEGORIES] } onCategoryChange={ handleCategoryChange } />
                     {
@@ -73,7 +113,7 @@ const Inventory = () => {
                             <View style={ styles.headerLabelContainer }>
                                 <Text style={ styles.headerLabel }>Status</Text>
                                 <Text style={ styles.headerLabel }>Product Name</Text>
-                                <Text style={ styles.headerLabel }>In Stock (kg)</Text>
+                                <Text style={ styles.headerLabel }>In Stock (g)</Text>
                             </View>
 
                             <FlatList
@@ -99,7 +139,7 @@ const Inventory = () => {
                                                 </View>
                                             </View>
                                             {/* In Stock Label with kilograms */}
-                                            <Text style={ styles.inStockLabel }>{ gramsToKg(item.quantity_left ?? 0, 1) } kg </Text>
+                                            <Text style={ styles.inStockLabel }>{ item.quantity_left ?? 0 }g </Text>
                                             <TouchableOpacity style={ { paddingLeft: 10 } } onPress={ () => router.replace(`/market/add-saleitem/${item.ItemId}`) }>
                                                 <FontAwesome name="cart-plus" size={ 20 } color="#389F4F" />
                                             </TouchableOpacity>
@@ -113,11 +153,6 @@ const Inventory = () => {
                         </> : <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ height: 111, width: 102, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} />
                     }
                 </View>
-                <TouchableOpacity style={ styles.plusButton } onPress={ () => router.replace('/ingredient/AddIngredient') }>
-                    <View style={ styles.plusButtonInner }>
-                        <AntDesign name="pluscircle" size={ 50 } color="#389F4F" />
-                    </View>
-                </TouchableOpacity>
                 <Navigation currentRoute="Inventory"/>
             </View>
         </View>
@@ -134,7 +169,7 @@ const styles = StyleSheet.create({
     },
     txtHeader: {
         fontSize: 28,
-        paddingLeft: 16,
+        paddingLeft: 10,
         paddingTop: 16,
         paddingBottom: 2,
         fontWeight: '600',

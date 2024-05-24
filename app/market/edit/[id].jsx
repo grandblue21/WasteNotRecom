@@ -9,7 +9,6 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import moment from 'moment/moment';
 import getIngredients from '../../../hook/getIngredients';
 import { useGlobalSearchParams } from 'expo-router';
-import { gramsToKg } from '../../../helpers/Converter';
 
 const EditSaleItem = () => {
 
@@ -168,7 +167,7 @@ const EditSaleItem = () => {
                     <View style={ styles.infoItem }>
                         <Text style={ styles.infoLabel }>Quantity:</Text>
                         <TextInput style={{ ...styles.infoInput, width: '50%' }} value={ quantity } placeholder="0 grams" onChangeText={ (input) => setQuantity(input) }/>
-                        <Text style={{ fontSize: 30 }}>/{ gramsToKg(ingredient.quantity_left ? parseInt(ingredient.quantity_left) + parseInt(saleItem.Quantity) : 0, 2) }kg left</Text>
+                        <Text style={{ fontSize: 30 }}>/{ ingredient.quantity_left ? parseInt(ingredient.quantity_left) + parseInt(saleItem.Quantity) : 0 }g left</Text>
                     </View>
                 </View>
 

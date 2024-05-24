@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView, View, Text, TextInput, TouchableOpacity, ToastAndroid, Image, ScrollView } from 'react-native';
 import { useGlobalSearchParams } from 'expo-router';
-import { COLORS, SIZES, COLLECTIONS, CATEGORIES, INGREDIENT_CLASSIFICATIONS } from '../../../constants';
+import { COLORS, SIZES, COLLECTIONS, CATEGORIES } from '../../../constants';
 import Header from '../../../components/common/header/Header';
 import FirebaseApp from '../../../helpers/FirebaseApp';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useRouter } from 'expo-router';
 import getProfile from '../../../hook/getProfile';
+import getIngredients from '../../../hook/getIngredients';
 import DropDownPicker from 'react-native-dropdown-picker';
 import moment from 'moment/moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -18,13 +19,14 @@ const Ingredient = () => {
     const router = useRouter();
     const { id } = useGlobalSearchParams();
     const [image, setImage] = useState(null);
+    const [itemId, setItemId] = useState(id == 'manual_scan' ? '' : id);
     const [name, setName] = useState('');
     const [quantity, setQuantity] = useState('');
     const [expDate, setExpDate] = useState(new Date(moment().format('YYYY-MM-DD')));
     const [price, setPrice] = useState(null);
     const [isMarketItem, setIsMarketItem] = useState(false);
-    const [classifications, setClassifications] = useState(INGREDIENT_CLASSIFICATIONS.map((x) => ({ name: x.name, checked: false })));
     const { profile } = getProfile();
+    const { ingredients, refetch } = getIngredients({ column: 'Restaurant_id', comparison: '==', value: profile.adminId });
     const [open, setOpen] = useState(false);
     const [category, setCategory] = useState(null);
     const [items, setItems] = useState(CATEGORIES.map(x => ({ label: x, value: x })));
@@ -38,19 +40,13 @@ const Ingredient = () => {
         try {
             
             const data = {
-                ItemId: id,
+                ItemId: itemId,
                 Item_name: name,
                 Restaurant_id: profile.adminId,
                 category: category,
                 image: image ?? 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Foppenheimerusa.com%2Fwp-content%2Fthemes%2Foppenheimer%2Fassets%2Fimages%2Fproduct-placeholder.jpg&f=1&nofb=1&ipt=66fdf705465b3aaaa8e0b1458f5450cd7d60dd360b48ed5e8679d0293ce68a01&ipo=images',
                 quantity_left: isMarketItem ? 0 : quantity,
-                total_quantity: quantity,
-                classifications: classifications.filter(x => x.checked).map(x => x.name)
-            }
-
-            // Check classification
-            if (classifications.filter(x => x.checked).length == 0) {
-                throw 'Specify atleast one ingredient classification';
+                total_quantity: quantity
             }
 
             // Check data
@@ -77,13 +73,29 @@ const Ingredient = () => {
 
             // Handle finish
             const handleFinish = async () => {
-                
-                // Insert Ingredient
-                const result = await FBApp.db.insert(COLLECTIONS.ingredients, data);
 
-                // Check if added
-                if (!result) {
-                    throw 'Failed to add ingredient';
+                // Check if ingredient exists
+                const existing_ing = ingredients.find((x) => x.ItemId == itemId);
+
+                // Existing
+                if (existing_ing) {
+
+                    // Update Ingredient
+                    const result = await FBApp.db.update(COLLECTIONS.ingredients, { quantity_left: parseInt(existing_ing.quantity_left) + parseInt(data.quantity_left), total_quantity: parseInt(existing_ing.total_quantity) + parseInt(data.quantity_left) }, existing_ing.id);
+
+                    // Check if added
+                    if (!result) {
+                        throw 'Failed to add ingredient';
+                    }
+                }
+                else {
+                    // Insert Ingredient
+                    const result = await FBApp.db.insert(COLLECTIONS.ingredients, data);
+
+                    // Check if added
+                    if (!result) {
+                        throw 'Failed to add ingredient';
+                    }
                 }
 
                 // Insert History
@@ -195,6 +207,13 @@ const Ingredient = () => {
         setImage(result.assets[0].uri);
     }
 
+    useEffect(() => {
+        // Refetch if profile is loaded
+        if (profile.adminId) {
+            refetch();
+        }
+    }, [profile.adminId]);
+
     return <>
         <SafeAreaView style={ styles.container }>
 
@@ -212,7 +231,7 @@ const Ingredient = () => {
 
                         <View style={ styles.infoItem }>
                             <Text style={ styles.infoLabel }>ID:</Text>
-                            <TextInput style={ styles.infoInput } value={ id } editable={ false }/>
+                            <TextInput style={ styles.infoInput } value={ itemId } editable={ id == 'manual_scan' } onChangeText={ (input) => setItemId(input) }/>
                         </View>
 
                         <View style={ styles.infoItem }>
@@ -268,30 +287,6 @@ const Ingredient = () => {
                                     />
                                 )}
                             </TouchableOpacity>
-                        </View>
-
-                        <View style={{ marginLeft: 20 }}>
-                            <Text style={{ ...styles.infoLabel, width: '100%', textAlign: 'left', marginBottom: 10 }}>Classification</Text>
-                            {
-                                INGREDIENT_CLASSIFICATIONS.map((classification, index) => (
-                                    <View style={{ flexDirection: 'row', paddingLeft: 20, marginBottom: 10 }}>
-                                        <Checkbox style={styles.checkbox} value={ classifications[index].checked } onValueChange={ (isChecked) => {
-
-                                            setClassifications(classifications.map((x, i) => {
-
-                                                // Check if current
-                                                if (index == i) {
-                                                    x.checked = isChecked;
-                                                }
-
-                                                return x;
-                                            }));
-
-                                        } }/>
-                                        <Text style={{ paddingLeft: 5 }}>{ classification.name }</Text>
-                                    </View>
-                                ))
-                            }
                         </View>
                     </View>
                     

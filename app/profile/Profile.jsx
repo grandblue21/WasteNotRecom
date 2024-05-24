@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Image, StyleSheet, Button, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import ScreenHeaderBtn from '../../components/common/header/ScreenHeaderBtn';
 import { FontAwesome } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
@@ -55,7 +55,7 @@ const CustomDropdown = () => {
 const Profile = () => {
 
     const router = useRouter();
-    const { profile } = getProfile();console.log(profile.imageUrl);
+    const { profile } = getProfile();
 
     return (
         <View style={ styles.container }>

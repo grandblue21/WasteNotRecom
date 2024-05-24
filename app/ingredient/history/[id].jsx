@@ -7,7 +7,6 @@ import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { COLLECTIONS, COLORS } from '../../../constants';
 import moment from 'moment/moment';
 import FirebaseApp from '../../../helpers/FirebaseApp';
-import { gramsToKg } from '../../../helpers/Converter';
 
 const History = () => {
 
@@ -65,7 +64,7 @@ const History = () => {
                             history.map((x, index) => (
                                 <View key={ index } style={ styles.historyItem }>
                                     <View style={ styles.stockTextContainer }>
-                                        <Text style={ styles.stockText }>{ gramsToKg(x.item_quantity, 1) }kg</Text>
+                                        <Text style={ styles.stockText }>{ x.item_quantity }g</Text>
                                     </View>
                                     <View style={ styles.details }>
                                         <Text style={ styles.detailText }>Date Added { moment(x.Date_added).format('MMMM D, YYYY') }</Text>

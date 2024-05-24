@@ -8,7 +8,6 @@ import Categories from '../../../components/common/navigation/Categories';
 import { useGlobalSearchParams } from 'expo-router';
 import FirebaseApp from '../../../helpers/FirebaseApp';
 import getSaleItems from '../../../hook/getSaleItems';
-import { gramsToKg } from '../../../helpers/Converter';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import axios from 'axios';
 import { GOOGLE_MAP_API_KEY, GOOGLE_MAP_CONFIG } from '../../../constants';
@@ -137,7 +136,7 @@ const Restaurant = () => {
                                     <View style={ styles.ingredientInfoContainer }>
                                         <View style={ styles.ingredientNameContainer }>
                                             <Text style={ styles.ingredientName } numberOfLines={ 1 } ellipsizeMode="tail">{ ingredient.data.Item_name }</Text>
-                                            <Text style={ styles.ingredientLeft }>In store: { gramsToKg(isNaN(ingredient.Quantity) ? 0 : ingredient.Quantity, 1) }kg</Text>
+                                            <Text style={ styles.ingredientLeft }>In store: { isNaN(ingredient.Quantity) ? 0 : ingredient.Quantity }g</Text>
                                         </View>
                                         <View style={ styles.ingredientPriceContainer }>
                                             <Text style={ styles.ingredientPrice }>₱{ (ingredient.Price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }</Text>

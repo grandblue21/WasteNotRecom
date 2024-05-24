@@ -7,7 +7,6 @@ import { useRouter } from 'expo-router';
 import Categories from '../../../components/common/navigation/Categories';
 import { useGlobalSearchParams } from 'expo-router';
 import FirebaseApp from '../../../helpers/FirebaseApp';
-import { gramsToKg } from '../../../helpers/Converter';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { GOOGLE_MAP_API_KEY, GOOGLE_MAP_CONFIG } from '../../../constants';
 import getMenu from '../../../hook/getMenu';

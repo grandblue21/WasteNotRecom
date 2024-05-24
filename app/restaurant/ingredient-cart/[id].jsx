@@ -5,7 +5,6 @@ import { COLORS, SIZES, COLLECTIONS } from '../../../constants';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import FirebaseApp from '../../../helpers/FirebaseApp';
 import getProfile from '../../../hook/getProfile';
-import { gramsToKg } from '../../../helpers/Converter';
 
 const IngredientCart = () => {
 

@@ -125,7 +125,7 @@ const Login = () => {
                 <Text style={styles.heading}>LOGIN</Text>
                 <InputIcon
                     icon={'user-circle-o'}
-                    placeholder={'Username'}
+                    placeholder={'Email'}
                     value={username}
                     setValue={setUsername}
                     isSlimIcon={false}

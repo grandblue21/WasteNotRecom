@@ -5,7 +5,7 @@ import axios from 'axios';
 import { AntDesign } from '@expo/vector-icons';
 import Navigation from '../../components/common/navigation/Navigation';
 import { SafeAreaView, Text, StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { COLLECTIONS, COLORS, SIZES, INGREDIENT_CLASSIFICATIONS, SPOONACULAR_API_KEY, images } from '../../constants';
+import { COLLECTIONS, COLORS, SIZES, SPOONACULAR_API_KEY, images } from '../../constants';
 import FirebaseApp from '../../helpers/FirebaseApp';
 import getRecommendation from '../../hook/getRecommendation';
 import moment from 'moment';
@@ -25,6 +25,7 @@ const Recommendation = () => {
     const [recipeLoading, setRecipeLoading] = useState(true);
     const [showPrevious, setShowPrevious] = useState(false);
     const capitalizeText = (text) => text.toLowerCase().replace(/(^|\s)\S/g, (match) => match.toUpperCase());
+    const MINIMUM_INGREDIENT_NUMBER_TO_RECOMMEND = 3;
 
     useEffect(() => {
         // Refetch if profile is loaded
@@ -54,7 +55,15 @@ const Recommendation = () => {
                 // Check if there are required ingredients in stock
                 if (in_stock.length == 0) {
 
-                    setRecommendations('Apparently, you currently have no ingredients in stock that can be considered as a main or base ingredient to create a dish.');
+                    setRecommendations('Apparently, you currently have no ingredients in stock to recommend a dish');
+
+                    return;
+                }
+
+                // Check if in stock available can recommend
+                if (in_stock.length < MINIMUM_INGREDIENT_NUMBER_TO_RECOMMEND) {
+
+                    setRecommendations(`Apparently, you need atleast ${ MINIMUM_INGREDIENT_NUMBER_TO_RECOMMEND } ingredients in stock to recommend a dish.`);
 
                     return;
                 }
@@ -226,13 +235,13 @@ const Recommendation = () => {
                                         <Text style={{ ...styles.ingredient, fontWeight: '900' }}> In store</Text>
                                         {
                                             recipe.usedIngredients.map((ingredient, i) => (
-                                                <Text key={i} style={ styles.ingredient }> - { capitalizeText(ingredient.name) }</Text>
+                                                <Text key={i} style={ styles.ingredient }> - { capitalizeText(ingredient.name) } ({ [ingredient.amount.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
                                             ))
                                         }
                                         <Text style={{ ...styles.ingredient, color: 'red', fontWeight: '900' }}> Missing</Text>
                                         {
                                             recipe.missedIngredients.map((ingredient, i) => (
-                                                <Text key={i} style={{ ...styles.ingredient, color: 'red' }}> - { capitalizeText(ingredient.name) }</Text>
+                                                <Text key={i} style={{ ...styles.ingredient, color: 'red' }}> - { capitalizeText(ingredient.name) } ({ [ingredient.amount.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
                                             ))
                                         }
                                     </View>

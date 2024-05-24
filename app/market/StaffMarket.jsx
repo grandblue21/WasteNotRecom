@@ -10,7 +10,6 @@ import getSaleItems from '../../hook/getSaleItems';
 import getProfile from '../../hook/getProfile';
 import FirebaseApp from '../../helpers/FirebaseApp';
 import { useRouter } from 'expo-router';
-import { gramsToKg } from '../../helpers/Converter';
 
 const MarketScreen = () => {
 
@@ -158,7 +157,7 @@ const MarketScreen = () => {
                                             </View>
                                             <View style={ styles.itemInfoContainer }>
                                                 <Text style={ styles.marketName }>{ item.data.Item_name }</Text>
-                                                <Text style={ styles.marketStock }>In Store: { gramsToKg(item.Quantity, 2) } kg</Text>
+                                                <Text style={ styles.marketStock }>In Store: { item.Quantity }g</Text>
                                             </View>
                                             <Text style={ styles.marketPrice }>₱{ parseFloat(item.Price).toLocaleString(undefined, { minimumFractionDigits: 2 }) } per kg</Text>
                                         </View>
