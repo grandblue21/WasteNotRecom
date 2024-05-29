@@ -4,12 +4,13 @@ import getIngredients from '../../hook/getIngredients';
 import axios from 'axios';
 import { AntDesign } from '@expo/vector-icons';
 import Navigation from '../../components/common/navigation/Navigation';
-import { SafeAreaView, Text, StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { SafeAreaView, Text, StyleSheet, View, ScrollView, TouchableOpacity, Image, ToastAndroid } from 'react-native';
 import { COLLECTIONS, COLORS, SIZES, SPOONACULAR_API_KEY, images } from '../../constants';
 import FirebaseApp from '../../helpers/FirebaseApp';
 import getRecommendation from '../../hook/getRecommendation';
 import moment from 'moment';
 import getMenu from '../../hook/getMenu';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const Recommendation = () => {
 
@@ -23,9 +24,67 @@ const Recommendation = () => {
     const [recFromDb, setRecFromDb] = useState(true);
     const [cancelTokenSource, setCancelTokenSource] = useState(null);
     const [recipeLoading, setRecipeLoading] = useState(true);
+    const [stock, setStock] = useState([]);
     const [showPrevious, setShowPrevious] = useState(false);
+    const [showFilter, setShowFilter] = useState(false);
     const capitalizeText = (text) => text.toLowerCase().replace(/(^|\s)\S/g, (match) => match.toUpperCase());
     const MINIMUM_INGREDIENT_NUMBER_TO_RECOMMEND = 3;
+
+    // Dropdown
+    const [filter1, setFilter1] = useState('');
+    const [open, setOpen] = useState(false);
+    const [filter2, setFilter2] = useState('');
+    const [open2, setOpen2] = useState(false);
+
+    // Handle filter submit
+    const handleFilterSubmit = async () => {
+
+        try {
+
+            // Check if both is selected
+            if (!filter1 || !filter2) {
+                ToastAndroid.showWithGravity('Select Ingredients First', ToastAndroid.LONG, ToastAndroid.TOP); return;
+            }
+
+            // Hide filter
+            setShowFilter(false);
+
+            // Show getting
+            setRecommendations(`Getting recipes for ${ filter1 } and ${ filter2 }...`);
+    
+            /*
+             * Spoonacular
+             */
+            const response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ filter1 },${ filter2 }&number=10&limitLicense=false&ignorePantry=false&apiKey=${SPOONACULAR_API_KEY}`);
+            setRecommendations(`Possible recipes for ${ filter1 } and ${ filter2 }:`);
+            setRecipes(response.data.map((x) => {
+
+                // Check missed ingredients if there is
+                x.usedIngredients = [...x.usedIngredients, ...x.missedIngredients.filter((y) => stock.map((z) => z.Item_name.toLowerCase()).includes(y.name.toLowerCase())).map((v) => {
+
+                    // Modify name with inventory
+                    v.name += ' (In Inventory)';
+
+                    // Return
+                    return x;
+                })];
+
+                // Update missed
+                x.missedIngredients = x.missedIngredients.filter((y) => !stock.map((z) => z.Item_name.toLowerCase()).includes(y.name.toLowerCase()));
+
+                // Return
+                return x;
+            }));
+        }
+        catch (error) {
+
+            // Show filter
+            setShowFilter(true);
+
+            // Show error
+            setRecommendations('WasteNot cannot recommend for now. Please try again later');
+        }
+    }
 
     useEffect(() => {
         // Refetch if profile is loaded
@@ -35,6 +94,22 @@ const Recommendation = () => {
             refetch();
         }
     }, [profile, isLoading]);
+
+    useEffect(() => {
+
+        const get_stock = () => {
+
+            // In stock
+            let in_stock = ingredients.filter((x) => parseInt(x.quantity_left) > 0);
+
+            // Set stock
+            setStock(in_stock.filter((x) => menu.map((y) => y.ingredientsList.map((z) => z.ingredients.toLowerCase()).includes(x.Item_name.toLowerCase())).length > 0));
+        }
+
+        if (ingredients.length > 0) {
+            get_stock();
+        }
+    }, [ingredients]);
 
     useEffect(() => {
 
@@ -87,7 +162,7 @@ const Recommendation = () => {
                     }
                 }
             }
-            catch (error) {
+            catch (error) {console.log('E', error);
                 setRecommendations('WasteNot cannot recommend for now. Please try again later');
             }
         }
@@ -194,7 +269,50 @@ const Recommendation = () => {
                     </View>
                 }
                 <Text style={ styles.title }>What can I cook?</Text>
-                <Text style={ styles.recommendation }>{ recommendations }</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <Text style={{ ...styles.recommendation, width: '75%' }}>{ recommendations }</Text>
+                    {
+                        stock.length > 0 && (
+                            <TouchableOpacity onPress={ () => setShowFilter(!showFilter) }>
+                                <Text style={{ fontWeight: '800', fontSize: 14 }}>Filter</Text>
+                            </TouchableOpacity>
+                        )
+                    }
+                </View>
+                {
+                    showFilter && (
+                        <View style={{ flex: 1, backgroundColor: COLORS.primary, padding: 10, borderRadius: 5, marginBottom: 10, zIndex: 10 }}>
+                            <Text style={{ fontSize: 16, color: 'white', fontWeight: '800', marginBottom: 10 }}>Recommend Recipes from 2 active inventory ingredients:</Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{ color: 'white' }}>First Ingredient</Text>
+                                    <DropDownPicker
+                                        open={ open }
+                                        value={ filter1 }
+                                        items={ stock.map((x) => ({ label: x.Item_name, value: x.Item_name })) }
+                                        setOpen={ setOpen }
+                                        setValue={ setFilter1 }
+                                        placeholder=""
+                                    />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{ color: 'white' }}>Second Ingredient</Text>
+                                    <DropDownPicker
+                                        open={ open2 }
+                                        value={ filter2 }
+                                        items={ stock.map((x) => ({ label: x.Item_name, value: x.Item_name })) }
+                                        setOpen={ setOpen2 }
+                                        setValue={ setFilter2 }
+                                        placeholder=""
+                                    />
+                                </View>
+                            </View>
+                            <TouchableOpacity onPress={ handleFilterSubmit} style={{ padding: 5, backgroundColor: '#D9D9D9' }}>
+                                <Text style={{ textAlign: 'center' }}>Submit</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )
+                }
                 {
                     recipes.length > 0 ? recipes.map((recipe, index) => (
                         <>
@@ -238,11 +356,17 @@ const Recommendation = () => {
                                                 <Text key={i} style={ styles.ingredient }> - { capitalizeText(ingredient.name) } ({ [ingredient.amount.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
                                             ))
                                         }
-                                        <Text style={{ ...styles.ingredient, color: 'red', fontWeight: '900' }}> Missing</Text>
                                         {
-                                            recipe.missedIngredients.map((ingredient, i) => (
-                                                <Text key={i} style={{ ...styles.ingredient, color: 'red' }}> - { capitalizeText(ingredient.name) } ({ [ingredient.amount.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
-                                            ))
+                                            recipe.missedIngredients.length > 0 && (
+                                                <>
+                                                    <Text style={{ ...styles.ingredient, color: 'red', fontWeight: '900' }}> Missing</Text>
+                                                    {
+                                                        recipe.missedIngredients.map((ingredient, i) => (
+                                                            <Text key={i} style={{ ...styles.ingredient, color: 'red' }}> - { capitalizeText(ingredient.name) } ({ [ingredient.amount.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
+                                                        ))
+                                                    }
+                                                </>
+                                            )
                                         }
                                     </View>
                                     {
@@ -344,7 +468,6 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 20,
-        marginBottom: 10,
         fontWeight: '900'
     },
     recommendation: {
