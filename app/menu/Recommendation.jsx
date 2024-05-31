@@ -27,7 +27,8 @@ const Recommendation = () => {
     const [stock, setStock] = useState([]);
     const [showPrevious, setShowPrevious] = useState(false);
     const [showFilter, setShowFilter] = useState(false);
-    const capitalizeText = (text) => text.toLowerCase().replace(/(^|\s)\S/g, (match) => match.toUpperCase());
+    const [filterOnProcess, setFilterOnProcess] = useState(false);
+    const capitalizeText = (text) => text?.toLowerCase().replace(/(^|\s)\S/g, (match) => match.toUpperCase()) ?? '';
     const MINIMUM_INGREDIENT_NUMBER_TO_RECOMMEND = 3;
 
     // Dropdown
@@ -46,6 +47,9 @@ const Recommendation = () => {
                 ToastAndroid.showWithGravity('Select Ingredients First', ToastAndroid.LONG, ToastAndroid.TOP); return;
             }
 
+            // Show on process
+            setFilterOnProcess(true);
+
             // Hide filter
             setShowFilter(false);
 
@@ -59,22 +63,26 @@ const Recommendation = () => {
             setRecommendations(`Possible recipes for ${ filter1 } and ${ filter2 }:`);
             setRecipes(response.data.map((x) => {
 
+                const missed = x.missedIngredients;
+
                 // Check missed ingredients if there is
-                x.usedIngredients = [...x.usedIngredients, ...x.missedIngredients.filter((y) => stock.map((z) => z.Item_name.toLowerCase()).includes(y.name.toLowerCase())).map((v) => {
+                x.usedIngredients = [...x.usedIngredients, ...missed.filter((y) => stock.filter((z) => z.Item_name.toLowerCase().includes(y.name.toLowerCase()) || y.name.toLowerCase().includes(z.Item_name.toLowerCase())).length > 0).map((y) => {
 
                     // Modify name with inventory
-                    v.name += ' (In Inventory)';
+                    y.name = y.name + (y.name.toLowerCase().includes(' (In Inventory)'.toLowerCase()) ? '' : ' (In Inventory)');
 
                     // Return
-                    return x;
+                    return y;
                 })];
 
                 // Update missed
-                x.missedIngredients = x.missedIngredients.filter((y) => !stock.map((z) => z.Item_name.toLowerCase()).includes(y.name.toLowerCase()));
+                x.missedIngredients = missed.filter((y) => stock.filter((z) => z.Item_name.toLowerCase().includes(y.name.toLowerCase()) || y.name.toLowerCase().includes(z.Item_name.toLowerCase())).length == 0);
 
                 // Return
                 return x;
             }));
+
+            // setFilterOnProcess(false);
         }
         catch (error) {
 
@@ -162,7 +170,7 @@ const Recommendation = () => {
                     }
                 }
             }
-            catch (error) {console.log('E', error);
+            catch (error) {
                 setRecommendations('WasteNot cannot recommend for now. Please try again later');
             }
         }
@@ -189,6 +197,11 @@ const Recommendation = () => {
     useEffect(() => {
         // Get recommendation
         if (!recommendation.isLoading) {
+
+            // Not continue if filter is on process
+            if (filterOnProcess) {
+                return;
+            }
 
             // In stock
             let in_stock = ingredients.filter((x) => parseInt(x.quantity_left) > 0);
@@ -353,7 +366,7 @@ const Recommendation = () => {
                                         <Text style={{ ...styles.ingredient, fontWeight: '900' }}> In store</Text>
                                         {
                                             recipe.usedIngredients.map((ingredient, i) => (
-                                                <Text key={i} style={ styles.ingredient }> - { capitalizeText(ingredient.name) } ({ [ingredient.amount.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
+                                                <Text key={i} style={ styles.ingredient }> - { capitalizeText(ingredient.name) } ({ [ingredient?.amount?.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
                                             ))
                                         }
                                         {
@@ -362,7 +375,7 @@ const Recommendation = () => {
                                                     <Text style={{ ...styles.ingredient, color: 'red', fontWeight: '900' }}> Missing</Text>
                                                     {
                                                         recipe.missedIngredients.map((ingredient, i) => (
-                                                            <Text key={i} style={{ ...styles.ingredient, color: 'red' }}> - { capitalizeText(ingredient.name) } ({ [ingredient.amount.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
+                                                            <Text key={i} style={{ ...styles.ingredient, color: 'red' }}> - { capitalizeText(ingredient.name) } ({ [ingredient?.amount?.toString(), ingredient.unitShort ? ingredient.unitShort : 'pc/s'].join(' ') })</Text>
                                                         ))
                                                     }
                                                 </>
