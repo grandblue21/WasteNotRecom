@@ -184,7 +184,7 @@ const Recommendation = () => {
                 {
                     showPrevious && <View style={{ flex: 1, marginBottom: 10 }}>
                         {
-                            recommendation.recommendation.sort((a, b) => moment(a.date ?? moment().format('YYYY-MM-DD HH:mm:ss')) < moment(b.date ?? moment().format('YYYY-MM-DD HH:mm:ss'))? -1 : 1).map((rec) => (
+                            recommendation.recommendation.sort((a, b) => moment(a.date ?? moment().format('YYYY-MM-DD HH:mm:ss')) < moment(b.date ?? moment().format('YYYY-MM-DD HH:mm:ss'))? 1 : -1).map((rec) => (
                                 <View>
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{ moment(rec?.date).format('MMMM DD, YYYY - h:mm A') }</Text>
