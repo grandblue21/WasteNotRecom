@@ -29,7 +29,6 @@ const Recommendation = () => {
     const [showFilter, setShowFilter] = useState(false);
     const [filterOnProcess, setFilterOnProcess] = useState(false);
     const capitalizeText = (text) => text?.toLowerCase().replace(/(^|\s)\S/g, (match) => match.toUpperCase()) ?? '';
-    const MINIMUM_INGREDIENT_NUMBER_TO_RECOMMEND = 3;
 
     // Dropdown
     const [filter1, setFilter1] = useState('');
@@ -121,70 +120,13 @@ const Recommendation = () => {
 
     useEffect(() => {
 
-        const get_recommendations = async () => {
-
-            try {
-
-                // Create a cancel token source
-                const source = axios.CancelToken.source();
-                setCancelTokenSource(source);
-
-                // In stock
-                let in_stock = ingredients.filter((x) => parseInt(x.quantity_left) > 0);
-
-                // Filter required
-                in_stock = in_stock.filter((x) => menu.map((y) => y.ingredientsList.map((z) => z.ingredients.toLowerCase()).includes(x.Item_name.toLowerCase())).length > 0);
-
-                // Check if there are required ingredients in stock
-                if (in_stock.length == 0) {
-
-                    setRecommendations('Apparently, you currently have no ingredients in stock to recommend a dish');
-
-                    return;
-                }
-
-                // Check if in stock available can recommend
-                if (in_stock.length < MINIMUM_INGREDIENT_NUMBER_TO_RECOMMEND) {
-
-                    setRecommendations(`Apparently, you need atleast ${ MINIMUM_INGREDIENT_NUMBER_TO_RECOMMEND } ingredients in stock to recommend a dish.`);
-
-                    return;
-                }
-
-                /*
-                 * Spoonacular
-                 */
-                try {
-                    const response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${in_stock.map(x => x.Item_name.toLowerCase()).join(',')}&number=10&limitLicense=false&ignorePantry=false&apiKey=${SPOONACULAR_API_KEY}`, {
-                        cancelToken: source.token
-                    });
-                    setRecommendations('Possible recipes:');
-                    setRecipes(response.data);
-                    setRecipeLoading(false);
-                }
-                catch (error) {
-
-                    // Throw error on non-cancel related errors
-                    if (!axios.isCancel(error)) {
-                        throw error.message;
-                    }
-                }
-            }
-            catch (error) {
-                setRecommendations('WasteNot cannot recommend for now. Please try again later');
-            }
-        }
-
         // Only get if record from db is empty
         if (!recFromDb) {
             if (isLI) {
-                setRecommendations('Analyzing ingredients and getting possible recipes...');
-            }
-            else if (!isLI && ingredients.length > 0) {
-                get_recommendations();
+                setRecommendations('Getting ingredients...');
             }
             else {
-                setRecommendations('No ingredients available');
+                setRecommendations('Choose ingredients');
             }
         }
 
@@ -202,23 +144,7 @@ const Recommendation = () => {
             if (filterOnProcess) {
                 return;
             }
-
-            // In stock
-            let in_stock = ingredients.filter((x) => parseInt(x.quantity_left) > 0);
-
-            // Filter required
-            in_stock = in_stock.filter((x) => menu.map((y) => y.ingredientsList.map((z) => z.ingredients.toLowerCase()).includes(x.Item_name.toLowerCase())).length > 0);
-
-            // Check matches
-            const match = recommendation.recommendation.find((x) => JSON.stringify(x.ingredients.sort()) == JSON.stringify(in_stock.map((x) => x.Item_name).sort()));
-
-            // There are recipes and recipes in inventory matches the ingredients for the recipe, if not get new set of recipes
-            if (match) {
-                setRecipes(match.recipes);
-            }
-            else {
-                setRecFromDb(false);
-            }
+            setRecFromDb(false);
         }
     }, [recommendation]);
 
@@ -296,7 +222,7 @@ const Recommendation = () => {
                     showFilter && (
                         <View style={{ flex: 1, backgroundColor: COLORS.primary, padding: 10, borderRadius: 5, marginBottom: 10, zIndex: 10 }}>
                             <Text style={{ fontSize: 16, color: 'white', fontWeight: '800', marginBottom: 10 }}>Recommend Recipes from 2 active inventory ingredients:</Text>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+                            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ color: 'white' }}>First Ingredient</Text>
                                     <DropDownPicker
@@ -428,7 +354,7 @@ const Recommendation = () => {
                                 </View>
                             }
                         </>
-                    )) : (!recipeLoading ? <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ height: 200, width: 102, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} /> : '')
+                    )) : (!recipeLoading ? <Image src={ images.LIST_EMPTY_PLACEHOLDER_IMG } style={{ height: 200, width: 102, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }} /> : <View style={{ height: 500 }}></View>)
                 }
             </ScrollView>
 
@@ -477,7 +403,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFF',
         marginBottom: 65,
         paddingBottom: 15,
-        paddingHorizontal: SIZES.large
+        paddingHorizontal: SIZES.large,
+        height: '100%'
     },
     title: {
         fontSize: 20,
