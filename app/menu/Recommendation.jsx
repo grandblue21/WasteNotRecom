@@ -60,7 +60,7 @@ const Recommendation = () => {
              */
             const response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ filter1 },${ filter2 }&number=10&limitLicense=false&ignorePantry=false&apiKey=${SPOONACULAR_API_KEY}`);
             setRecommendations(`Possible recipes for ${ filter1 } and ${ filter2 }:`);
-            setRecipes(response.data.map((x) => {
+            const results = response.data.map((x) => {
 
                 const missed = x.missedIngredients;
 
@@ -79,11 +79,15 @@ const Recommendation = () => {
 
                 // Return
                 return x;
-            }));
+            });console.log(results[0]);
+            setRecipes(results.sort((a, b) => (
+                a.usedIngredients.filter((y) => stock.filter((z) => z.Item_name.toLowerCase().includes(y.name.toLowerCase()) || y.name.toLowerCase().includes(z.Item_name.toLowerCase()))).length >
+                b.usedIngredients.filter((y) => stock.filter((z) => z.Item_name.toLowerCase().includes(y.name.toLowerCase()) || y.name.toLowerCase().includes(z.Item_name.toLowerCase()))).length ? -1 : 1
+            )));
 
             // setFilterOnProcess(false);
         }
-        catch (error) {
+        catch (error) {console.log(error);
 
             // Show filter
             setShowFilter(true);
@@ -180,7 +184,7 @@ const Recommendation = () => {
                 {
                     showPrevious && <View style={{ flex: 1, marginBottom: 10 }}>
                         {
-                            recommendation.recommendation.sort((a, b) => moment(a.date ?? moment().format('YYYY-MM-DD HH:mm:ss')) > moment(b.date ?? moment().format('YYYY-MM-DD HH:mm:ss'))).map((rec) => (
+                            recommendation.recommendation.sort((a, b) => moment(a.date ?? moment().format('YYYY-MM-DD HH:mm:ss')) < moment(b.date ?? moment().format('YYYY-MM-DD HH:mm:ss'))? -1 : 1).map((rec) => (
                                 <View>
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{ moment(rec?.date).format('MMMM DD, YYYY - h:mm A') }</Text>
