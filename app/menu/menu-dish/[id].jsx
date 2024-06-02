@@ -44,12 +44,12 @@ const MenuDish = () => {
 
                 // Check if there is a match
                 if (!match) {
-                    throw `There is an insufficient amount or missing ingredients in the inventory to proceed`;
+                    throw `There is no ingredient in inventory for ${ ing.ingredients }`;
                 }
 
                 // Check if ther eis enough
                 if (!match.quantity_left || parseFloat(match.quantity_left) < parseFloat(ing.grams)) {
-                    throw `There is an insufficient amount or missing ingredients in the inventory to proceed`;
+                    throw `There is an insufficient amount of ${ match.Item_name }. Need ${ parseFloat(ing.grams) - parseFloat(match.quantity_left) } grams more.`;
                 }
             });
 

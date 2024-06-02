@@ -4,7 +4,7 @@ import getIngredients from '../../hook/getIngredients';
 import axios from 'axios';
 import { AntDesign } from '@expo/vector-icons';
 import Navigation from '../../components/common/navigation/Navigation';
-import { SafeAreaView, Text, StyleSheet, View, ScrollView, TouchableOpacity, Image, ToastAndroid } from 'react-native';
+import { SafeAreaView, Text, StyleSheet, View, ScrollView, TouchableOpacity, Image, ToastAndroid, TextInput } from 'react-native';
 import { COLLECTIONS, COLORS, SIZES, SPOONACULAR_API_KEY, images } from '../../constants';
 import FirebaseApp from '../../helpers/FirebaseApp';
 import getRecommendation from '../../hook/getRecommendation';
@@ -31,8 +31,10 @@ const Recommendation = () => {
     const capitalizeText = (text) => text?.toLowerCase().replace(/(^|\s)\S/g, (match) => match.toUpperCase()) ?? '';
 
     // Dropdown
+    const [f1Search, setF1Search] = useState('');
     const [filter1, setFilter1] = useState('');
     const [open, setOpen] = useState(false);
+    const [f2Search, setF2Search] = useState('');
     const [filter2, setFilter2] = useState('');
     const [open2, setOpen2] = useState(false);
 
@@ -87,7 +89,7 @@ const Recommendation = () => {
 
             // setFilterOnProcess(false);
         }
-        catch (error) {console.log(error);
+        catch (error) {
 
             // Show filter
             setShowFilter(true);
@@ -229,10 +231,11 @@ const Recommendation = () => {
                             <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ color: 'white' }}>First Ingredient</Text>
+                                    { open && <TextInput value={ f1Search } onChangeText={ (input) => setF1Search(input) } placeholder="Search..." style={{ borderWidth: 1, backgroundColor: 'white', borderRadius: 5, paddingHorizontal: 5, height: 40 }}/> }
                                     <DropDownPicker
                                         open={ open }
                                         value={ filter1 }
-                                        items={ stock.map((x) => ({ label: x.Item_name, value: x.Item_name })) }
+                                        items={ stock.filter((x) => !f1Search || (f1Search && x.Item_name.toLowerCase().includes(f1Search.toLowerCase()))).map((x) => ({ label: x.Item_name, value: x.Item_name })) }
                                         setOpen={ setOpen }
                                         setValue={ setFilter1 }
                                         placeholder=""
@@ -240,10 +243,11 @@ const Recommendation = () => {
                                 </View>
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ color: 'white' }}>Second Ingredient</Text>
+                                    { open2 && <TextInput value={ f2Search } onChangeText={ (input) => setF2Search(input) } placeholder="Search..." style={{ borderWidth: 1, backgroundColor: 'white', borderRadius: 5, paddingHorizontal: 5, height: 40 }}/> }
                                     <DropDownPicker
                                         open={ open2 }
                                         value={ filter2 }
-                                        items={ stock.map((x) => ({ label: x.Item_name, value: x.Item_name })) }
+                                        items={ stock.filter((x) => !f2Search || (f2Search && x.Item_name.toLowerCase().includes(f2Search.toLowerCase()))).map((x) => ({ label: x.Item_name, value: x.Item_name })) }
                                         setOpen={ setOpen2 }
                                         setValue={ setFilter2 }
                                         placeholder=""
